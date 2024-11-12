@@ -1,0 +1,2 @@
+[34m2024-11-11 15:28:35.114 +0330 0001 INFO[0m [channelCmd] [34;1mInitCmdFactory[0m -> Endorser and orderer connections initialized
+Error: proposal failed (err: bad proposal response 500: cannot create ledger from genesis block: ledger [My_channel1] already exists with state [ACTIVE])

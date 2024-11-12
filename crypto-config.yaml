@@ -1,0 +1,70 @@
+OrdererOrgs:
+  - Name: OrdererOrg
+    Domain: orderer.oil.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer
+    # Enable TLS generation
+    TLS:
+      Enabled: true
+      # Optional: define the TLS configuration (can leave it empty to generate default)
+      # Example: subject for certificate, key size, etc.
+      Subject: "/C=US/ST=California/L=San Francisco/O=OilSupplyChain/OU=Orderer/CN=orderer.oil.com"
+
+
+PeerOrgs:
+  - Name: ProcessingOrg
+    Domain: processing.oil.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: QualityControlOrg
+    Domain: qualitycontrol.oil.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: PackagingOrg
+    Domain: packaging.oil.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: WarehousingOrg
+    Domain: warehousing.oil.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: TestingOrg
+    Domain: testing.oil.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: DistributionOrg
+    Domain: distribution.oil.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: ServiceCenterOrg
+    Domain: servicecenter.oil.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1

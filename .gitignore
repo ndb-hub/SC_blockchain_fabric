@@ -1,0 +1,12 @@
+# Ignore IDE and system files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Ignore logs, temporary files, and Docker cache
+*.log
+*.tmp
+*.lock
+organizations/fabric-ca/ordererOrg/msp/keystore/*
+organizations/fabric-ca/ordererOrg/msp/keystore/*

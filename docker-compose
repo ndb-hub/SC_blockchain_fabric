@@ -1,0 +1,297 @@
+version: '2'
+
+networks:
+  fabric_net:
+
+services:
+
+  # Orderer Service
+  orderer.oil.com:
+    container_name: orderer.oil.com
+    image: hyperledger/fabric-orderer:2.5.9
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    ports:
+    - 7052:7050   # Change 7050 to 7051 (or any other available port)
+    volumes:
+      - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block:ro
+      - ./organizations/ordererOrganizations/orderer.oil.com/orderers/orderer.orderer.oil.com/msp:/var/hyperledger/orderer/msp
+      - ./organizations/ordererOrganizations/orderer.oil.com/orderers/orderer.orderer.oil.com/tls:/var/hyperledger/orderer/tls
+      - ordererdata:/var/hyperledger/production/orderer
+    networks:
+      fabric_net:
+        aliases:
+          - orderer.oil.com
+
+  # CA for the network
+  ca.oil.com:
+    image: hyperledger/fabric-ca:1.5.12
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca.oil.com
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server/ca.oil.com.crt
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server/ca.oil.com-key.pem
+    ports:
+      - 9454:7054    # External port 9454 mapped to internal port 7054
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ./organizations/fabric-ca/ordererOrg:/etc/hyperledger/fabric-ca-server
+    networks:
+      fabric_net:
+
+  # Peer Services
+  peer0.processing.oil.com:
+    container_name: peer0.processing.oil.com
+    image: hyperledger/fabric-peer:2.5.9
+    environment:
+      - CORE_PEER_ID=peer0.processing.oil.com
+      - CORE_PEER_LOCALMSPID=ProcessingMSP
+      - CORE_PEER_ADDRESS=peer0.processing.oil.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.processing.oil.com:7051
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    ports:
+    - 8062:7051    # External port 8051 mapped to internal port 7051
+    - 8053:7052    # Change 8052 to 8053 (or another available port)
+    volumes:
+      - /var/run:/host/var/run
+      - ./organizations/peerOrganizations/processing.oil.com/peers/peer0.processing.oil.com/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/processing.oil.com/peers/peer0.processing.oil.com/tls:/etc/hyperledger/fabric/tls
+      - peer0.processing.oil.com:/var/hyperledger/production
+    networks:
+      fabric_net:
+        aliases:
+          - peer0.processing.oil.com
+
+  peer0.qualitycontrol.oil.com:
+    container_name: peer0.qualitycontrol.oil.com
+    image: hyperledger/fabric-peer:2.5.9
+    environment:
+      - CORE_PEER_ID=peer0.qualitycontrol.oil.com
+      - CORE_PEER_LOCALMSPID=QualityControlMSP
+      - CORE_PEER_ADDRESS=peer0.qualitycontrol.oil.com:8051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.qualitycontrol.oil.com:8051
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8052
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    ports:
+      - 8051:8051
+      - 8052:8052
+    volumes:
+      - /var/run:/host/var/run
+      - ./organizations/peerOrganizations/qualitycontrol.oil.com/peers/peer0.qualitycontrol.oil.com/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/qualitycontrol.oil.com/peers/peer0.qualitycontrol.oil.com/tls:/etc/hyperledger/fabric/tls
+      - peer0.qualitycontrol.oil.com:/var/hyperledger/production
+    networks:
+      fabric_net:
+        aliases:
+          - peer0.qualitycontrol.oil.com
+
+  peer0.packaging.oil.com:
+    container_name: peer0.packaging.oil.com
+    image: hyperledger/fabric-peer:2.5.9
+    environment:
+      - CORE_PEER_ID=peer0.packaging.oil.com
+      - CORE_PEER_LOCALMSPID=PackagingMSP
+      - CORE_PEER_ADDRESS=peer0.packaging.oil.com:9051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.packaging.oil.com:9051
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    ports:
+    - 9151:7051    # External port 9151 mapped to internal port 7051
+    - 9152:7052    # External port 9152 mapped to internal port 7052
+    volumes:
+      - /var/run:/host/var/run
+      - ./organizations/peerOrganizations/packaging.oil.com/peers/peer0.packaging.oil.com/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/packaging.oil.com/peers/peer0.packaging.oil.com/tls:/etc/hyperledger/fabric/tls
+      - peer0.packaging.oil.com:/var/hyperledger/production
+    networks:
+      fabric_net:
+        aliases:
+          - peer0.packaging.oil.com
+
+  peer0.warehousing.oil.com:
+    container_name: peer0.warehousing.oil.com
+    image: hyperledger/fabric-peer:2.5.9
+    environment:
+      - CORE_PEER_ID=peer0.warehousing.oil.com
+      - CORE_PEER_LOCALMSPID=WarehousingMSP
+      - CORE_PEER_ADDRESS=peer0.warehousing.oil.com:10051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.warehousing.oil.com:10051
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:10052
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    ports:
+      - 10051:10051
+      - 10052:10052
+    volumes:
+      - /var/run:/host/var/run
+      - ./organizations/peerOrganizations/warehousing.oil.com/peers/peer0.warehousing.oil.com/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/warehousing.oil.com/peers/peer0.warehousing.oil.com/tls:/etc/hyperledger/fabric/tls
+      - peer0.warehousing.oil.com:/var/hyperledger/production
+    networks:
+      fabric_net:
+        aliases:
+          - peer0.warehousing.oil.com
+
+  peer0.testing.oil.com:
+    container_name: peer0.testing.oil.com
+    image: hyperledger/fabric-peer:2.5.9
+    environment:
+      - CORE_PEER_ID=peer0.testing.oil.com
+      - CORE_PEER_LOCALMSPID=TestingMSP
+      - CORE_PEER_ADDRESS=peer0.testing.oil.com:11051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.testing.oil.com:11051
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:11052
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    ports:
+      - 11051:11051
+      - 11052:11052
+    volumes:
+      - /var/run:/host/var/run
+      - ./organizations/peerOrganizations/testing.oil.com/peers/peer0.testing.oil.com/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/testing.oil.com/peers/peer0.testing.oil.com/tls:/etc/hyperledger/fabric/tls
+      - peer0.testing.oil.com:/var/hyperledger/production
+    networks:
+      fabric_net:
+        aliases:
+          - peer0.testing.oil.com
+
+
+  peer0.distribution.oil.com:
+    container_name: peer0.distribution.oil.com
+    image: hyperledger/fabric-peer:2.5.9
+    environment:
+      - CORE_PEER_ID=peer0.distribution.oil.com
+      - CORE_PEER_LOCALMSPID=DistributionMSP
+      - CORE_PEER_ADDRESS=peer0.distribution.oil.com:12051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.distribution.oil.com:12051
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:12052
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    ports:
+      - 12051:12051
+      - 12052:12052
+    volumes:
+      - /var/run:/host/var/run
+      - ./organizations/peerOrganizations/distribution.oil.com/peers/peer0.distribution.oil.com/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/distribution.oil.com/peers/peer0.distribution.oil.com/tls:/etc/hyperledger/fabric/tls
+      - peer0.distribution.oil.com:/var/hyperledger/production
+    networks:
+      fabric_net:
+        aliases:
+          - peer0.distribution.oil.com
+
+  peer0.servicecenter.oil.com:
+    container_name: peer0.servicecenter.oil.com
+    image: hyperledger/fabric-peer:2.5.9
+    environment:
+      - CORE_PEER_ID=peer0.servicecenter.oil.com
+      - CORE_PEER_LOCALMSPID=ServiceCenterMSP
+      - CORE_PEER_ADDRESS=peer0.servicecenter.oil.com:13051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.servicecenter.oil.com:13051
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:13052
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    ports:
+      - 13051:13051
+      - 13052:13052
+    volumes:
+      - /var/run:/host/var/run
+      - ./organizations/peerOrganizations/servicecenter.oil.com/peers/peer0.servicecenter.oil.com/msp:/etc/hyperledger/fabric/msp
+      - ./organizations/peerOrganizations/servicecenter.oil.com/peers/peer0.servicecenter.oil.com/tls:/etc/hyperledger/fabric/tls
+      - peer0.servicecenter.oil.com:/var/hyperledger/production
+    networks:
+      fabric_net:
+        aliases:
+          - peer0.servicecenter.oil.com
+
+  # CLI for administrative commands
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools:2.5.9
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_PEER_LOCALMSPID=ProcessingMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp/users/Admin@processing.oil.com/msp
+      - CORE_PEER_ADDRESS=peer0.processing.oil.com:7051
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    volumes:
+      - ./crypto-config:/etc/hyperledger/fabric/msp
+      - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts
+      - ./chaincode:/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode
+    networks:
+      fabric_net:
+        aliases:
+          - cli
+
+volumes:
+  ordererdata:
+  processingdata:
+  qualitycontroldata:
+  packagingdata:
+  warehousingdata:
+  testingdata:
+  distributiondata:
+  servicecenterdata:
+  orderer.oil.com: {}
+  peer0.processing.oil.com: {}
+  peer0.qualitycontrol.oil.com: {}
+  peer0.packaging.oil.com: {}
+  peer0.warehousing.oil.com: {}
+  peer0.testing.oil.com: {}
+  peer0.distribution.oil.com: {}
+  peer0.servicecenter.oil.com: {}
+
+

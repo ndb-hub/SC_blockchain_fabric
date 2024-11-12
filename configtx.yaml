@@ -1,0 +1,267 @@
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+
+Organizations:
+  - &OrdererOrg
+    Name: OrdererOrg
+    ID: OrdererMSP
+    MSPDir: ./organizations/ordererOrganizations/orderer.oil.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"  # Explicit Writers policy
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+      BlockValidation:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+
+  - &ProcessingOrg
+    Name: ProcessingOrg
+    ID: ProcessingMSP
+    MSPDir: ./organizations/peerOrganizations/processing.oil.com/msp
+    AnchorPeers:
+      - Host: peer0.processing.oil.com
+        Port: 7051
+    Policies:
+      Admins:
+        Type: Signature
+        Rule: "OR('ProcessingMSP.admin')"
+      Readers:
+        Type: Signature
+        Rule: "OR('ProcessingMSP.member')"  # Explicit Readers policy
+      Writers:
+        Type: Signature
+        Rule: "OR('ProcessingMSP.member')"  # Explicit Writers policy
+      BlockValidation:
+        Type: Signature
+        Rule: "OR('ProcessingMSP.admin')"  # Admin policy for BlockValidation
+
+  - &QualityControlOrg
+    Name: QualityControlOrg
+    ID: QualityControlMSP
+    MSPDir: ./organizations/peerOrganizations/qualitycontrol.oil.com/msp
+    AnchorPeers:
+      - Host: peer0.qualitycontrol.oil.com
+        Port: 8051
+    Policies:
+      Admins:
+        Type: Signature
+        Rule: "OR('QualityControlMSP.admin')"
+      Readers:
+        Type: Signature
+        Rule: "OR('QualityControlMSP.member')"  # Explicit Readers policy
+      Writers:
+        Type: Signature
+        Rule: "OR('QualityControlMSP.member')"  # Explicit Writers policy
+      BlockValidation:
+        Type: Signature
+        Rule: "OR('QualityControlMSP.admin')"  # Admin policy for BlockValidation
+
+  - &PackagingOrg
+    Name: PackagingOrg
+    ID: PackagingMSP
+    MSPDir: ./organizations/peerOrganizations/packaging.oil.com/msp
+    AnchorPeers:
+      - Host: peer0.packaging.oil.com
+        Port: 9051
+    Policies:
+      Admins:
+        Type: Signature
+        Rule: "OR('PackagingMSP.admin')"
+      Readers:
+        Type: Signature
+        Rule: "OR('PackagingMSP.member')"  # Explicit Readers policy
+      Writers:
+        Type: Signature
+        Rule: "OR('PackagingMSP.member')"  # Explicit Writers policy
+      BlockValidation:
+        Type: Signature
+        Rule: "OR('PackagingMSP.admin')"  # Admin policy for BlockValidation
+
+  - &WarehousingOrg
+    Name: WarehousingOrg
+    ID: WarehousingMSP
+    MSPDir: ./organizations/peerOrganizations/warehousing.oil.com/msp
+    AnchorPeers:
+      - Host: peer0.warehousing.oil.com
+        Port: 10051
+    Policies:
+      Admins:
+        Type: Signature
+        Rule: "OR('WarehousingMSP.admin')"
+      Readers:
+        Type: Signature
+        Rule: "OR('WarehousingMSP.member')"  # Explicit Readers policy
+      Writers:
+        Type: Signature
+        Rule: "OR('WarehousingMSP.member')"  # Explicit Writers policy
+      BlockValidation:
+        Type: Signature
+        Rule: "OR('WarehousingMSP.admin')"  # Admin policy for BlockValidation
+
+  - &TestingOrg
+    Name: TestingOrg
+    ID: TestingMSP
+    MSPDir: ./organizations/peerOrganizations/testing.oil.com/msp
+    AnchorPeers:
+      - Host: peer0.testing.oil.com
+        Port: 11051
+    Policies:
+      Admins:
+        Type: Signature
+        Rule: "OR('TestingMSP.admin')"
+      Readers:
+        Type: Signature
+        Rule: "OR('TestingMSP.member')"  # Explicit Readers policy
+      Writers:
+        Type: Signature
+        Rule: "OR('TestingMSP.member')"  # Explicit Writers policy
+      BlockValidation:
+        Type: Signature
+        Rule: "OR('TestingMSP.admin')"  # Admin policy for BlockValidation
+
+  - &DistributionOrg
+    Name: DistributionOrg
+    ID: DistributionMSP
+    MSPDir: ./organizations/peerOrganizations/distribution.oil.com/msp
+    AnchorPeers:
+      - Host: peer0.distribution.oil.com
+        Port: 12051
+    Policies:
+      Admins:
+        Type: Signature
+        Rule: "OR('DistributionMSP.admin')"
+      Readers:
+        Type: Signature
+        Rule: "OR('DistributionMSP.member')"  # Explicit Readers policy
+      Writers:
+        Type: Signature
+        Rule: "OR('DistributionMSP.member')"  # Explicit Writers policy
+      BlockValidation:
+        Type: Signature
+        Rule: "OR('DistributionMSP.admin')"  # Admin policy for BlockValidation
+
+  - &ServiceCenterOrg
+    Name: ServiceCenterOrg
+    ID: ServiceCenterMSP
+    MSPDir: ./organizations/peerOrganizations/servicecenter.oil.com/msp
+    AnchorPeers:
+      - Host: peer0.servicecenter.oil.com
+        Port: 13051
+    Policies:
+      Admins:
+        Type: Signature
+        Rule: "OR('ServiceCenterMSP.admin')"
+      Readers:
+        Type: Signature
+        Rule: "OR('ServiceCenterMSP.member')"  # Explicit Readers policy
+      Writers:
+        Type: Signature
+        Rule: "OR('ServiceCenterMSP.member')"  # Explicit Writers policy
+      BlockValidation:
+        Type: Signature
+        Rule: "OR('ServiceCenterMSP.admin')"  # Admin policy for BlockValidation
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  Addresses:
+    - orderer.oil.com:7050
+  EtcdRaft:
+    Consenters:
+      - Host: orderer.oil.com
+        Port: 7050
+        ClientTLSCert: ./organizations/ordererOrganizations/orderer.oil.com/orderers/orderer.orderer.oil.com/tls/server.crt
+        ServerTLSCert: ./organizations/ordererOrganizations/orderer.oil.com/orderers/orderer.orderer.oil.com/tls/server.crt
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  Policies:
+    Readers:
+      Type: Signature
+      Rule: "OR('OrdererMSP.member')"
+    Writers:
+      Type: Signature
+      Rule: "OR('OrdererMSP.member')"  # Explicit Writers policy
+    Admins:
+      Type: Signature
+      Rule: "OR('OrdererMSP.admin')"
+    BlockValidation:
+      Type: Signature
+      Rule: "OR('OrdererMSP.member')"
+
+Application: &ApplicationDefaults
+  Organizations: []
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers:
+      Type: Signature
+      Rule: "OR('ProcessingMSP.member', 'QualityControlMSP.member', 'PackagingMSP.member', 'WarehousingMSP.member', 'TestingMSP.member', 'DistributionMSP.member', 'ServiceCenterMSP.member')"
+    Writers:
+      Type: Signature
+      Rule: "OR('ProcessingMSP.member', 'QualityControlMSP.member', 'PackagingMSP.member', 'WarehousingMSP.member', 'TestingMSP.member', 'DistributionMSP.member', 'ServiceCenterMSP.member')"
+    Admins:
+      Type: Signature
+      Rule: "OR('ProcessingMSP.admin', 'QualityControlMSP.admin', 'PackagingMSP.admin', 'WarehousingMSP.admin', 'TestingMSP.admin', 'DistributionMSP.admin', 'ServiceCenterMSP.admin')"
+
+Profiles:
+  OilSupplyChainGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+    Consortiums:
+      OilSupplyConsortium:
+        Organizations:
+          - *ProcessingOrg
+          - *QualityControlOrg
+          - *PackagingOrg
+          - *WarehousingOrg
+          - *TestingOrg
+          - *DistributionOrg
+          - *ServiceCenterOrg
+
+  OilSupplyChainChannel:
+    Consortium: OilSupplyConsortium
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *ProcessingOrg
+        - *QualityControlOrg
+        - *PackagingOrg
+        - *WarehousingOrg
+        - *TestingOrg
+        - *DistributionOrg
+        - *ServiceCenterOrg
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+      Policies:
+        Readers:
+          Type: Signature
+          Rule: "OR('ProcessingMSP.member', 'QualityControlMSP.member', 'PackagingMSP.member', 'WarehousingMSP.member', 'TestingMSP.member', 'DistributionMSP.member', 'ServiceCenterMSP.member')"
+        Writers:
+          Type: Signature
+          Rule: "OR('ProcessingMSP.member', 'QualityControlMSP.member', 'PackagingMSP.member', 'WarehousingMSP.member', 'TestingMSP.member', 'DistributionMSP.member', 'ServiceCenterMSP.member')"
+        Admins:
+          Type: Signature
+          Rule: "OR('ProcessingMSP.admin', 'QualityControlMSP.admin', 'PackagingMSP.admin', 'WarehousingMSP.admin', 'TestingMSP.admin', 'DistributionMSP.admin', 'ServiceCenterMSP.admin')"
+        LifecycleEndorsement:
+          Type: Signature
+          Rule: "OR('ProcessingMSP.peer', 'QualityControlMSP.peer', 'PackagingMSP.peer', 'WarehousingMSP.peer', 'TestingMSP.peer', 'DistributionMSP.peer', 'ServiceCenterMSP.peer')"
+        Endorsement:
+          Type: Signature
+          Rule: "OR('ProcessingMSP.peer', 'QualityControlMSP.peer', 'PackagingMSP.peer', 'WarehousingMSP.peer', 'TestingMSP.peer', 'DistributionMSP.peer', 'ServiceCenterMSP.peer')"  
