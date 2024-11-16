@@ -1,0 +1,111 @@
+i get the file in this link manually:
+then :
+ndb2@NDB:~$ cd ~/hyperledger_fabric
+ndb2@NDB:~$ cd $HOME/hyperledger_fabric
+ndb2@NDB:~/hyperledger_fabric$ file ~/hyperledger/install-fabric.sh
+/home/ndb2/hyperledger/install-fabric.sh: Bourne-Again shell script, ASCII text executable
+ndb2@NDB:~/hyperledger_fabric$ chmod +x ~/hyperledger/install-fabric.sh
+ndb2@NDB:~/hyperledger_fabric$ ./install-fabric.sh docker samples binary
+-bash: ./install-fabric.sh: Permission denied
+ndb2@NDB:~/hyperledger_fabric$ ls -l ~/hyperledger/install-fabric.sh
+-rwxr-xr-x 1 ndb2 ndb2 9723 Nov  6 14:33 /home/ndb2/hyperledger/install-fabric.sh
+ndb2@NDB:~/hyperledger_fabric$ bash ./install-fabric.sh docker samples binary
+
+it is start downloading.
+
+cd ~/hyperledger_fabric/fabric-samples/test-network
+
+ndb2@NDB:~/hyperledger_fabric/fabric-samples/test-network$ ./network.sh down
+
+ndb2@NDB:~/hyperledger_fabric/fabric-samples/test-network$ ./network.sh up createChannel -c mychannel -ca or ./network.sh up createChannel -ca -c mychannel
+
+
+cd ../asset-transfer-basic/chaincode-typescript/
+sudo npm install -g typescript
+npm install
+npm run build
+
+
+cd ../asset-transfer-basic/application-gateway-typescript
+npm install
+npm start
+
+nano ~/.bashrc
+peer version
+
+cd ~/hyperledger_fabric/fabric-samples/test-network
+./network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-typescript/ -ccl typescript
+
+cd ../asset-transfer-basic/application-gateway-typescript
+npm install
+npm start
+
+
+export FABRIC_CFG_PATH=$HOME/hyperledger_fabric/fabric-samples/config
+export PATH=$PATH:$HOME/hyperledger_fabric/fabric-samples/bin
+
+*****end of the setup test network
+
+cd ~/hyperledger_fabric/myfabric-chaincode
+touch index.js
+tar -czvf batch-chaincode.tar.gz . or tar -czvf batch-chaincode.tar.gz index.js
+
+npm init -y
+npm install --save fabric-shim
+
+cd ~/hyperledger_fabric/fabric-samples/test-network
+./network.sh deployCC -ccn batch -ccp /home/ndb2/hyperledger_fabric/myfabric-chaincode -ccl javascript
+
+ peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile $ORDERER_CA -C mychannel -n batch -c '{"function":"storeBatchData","Args":["batch1", "2024-11-13", "certHash123"]}'
+
+peer chaincode query -C mychannel -n batch -c '{"Args":["getBatch", "batch1"]}'
+
+######
+Set the Peer Environment Variables You need to configure the following environment variables for your peer. Use the correct paths based on your system:
+
+export FABRIC_CFG_PATH=$HOME/hyperledger_fabric/fabric-samples/config
+export PATH=$PATH:$HOME/hyperledger_fabric/fabric-samples/bin
+
+export CORE_PEER_TLS_ENABLED=true
+export CORE_PEER_LOCALMSPID="Org1MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=$HOME/hyperledger_fabric/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+export CORE_PEER_MSPCONFIGPATH=$HOME/hyperledger_fabric/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+export CORE_PEER_ADDRESS=localhost:7051
+
+export ORDERER_CA=/home/ndb2/hyperledger_fabric/fabric-samples/test-network/organizations/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
+
+
+
+test them:
+echo $CORE_PEER_LOCALMSPID
+echo $CORE_PEER_TLS_ROOTCERT_FILE
+echo $CORE_PEER_MSPCONFIGPATH
+echo $CORE_PEER_ADDRESS
+
+######
+
+ndb2@NDB:~/hyperledger_fabric/myfabric-chaincode$ npm install
+
+up to date, audited 82 packages in 945ms
+
+6 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+ndb2@NDB:~/hyperledger_fabric/myfabric-chaincode$ tar -czvf batch-chaincode.tar.gz .
+
+ 
+ndb2@NDB:~/hyperledger_fabric/fabric-samples/test-network$ ./network.sh deployCC -ccn batch -ccp /home/ndb2/hyperledger_fabric/myfabric-chaincode -ccl javascript
+
+ndb2@NDB:~/hyperledger_fabric/fabric-samples/test-network$ peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"storeBatchData","Args":["batch1", "2024-11-13", "certHash123"]}'
+2024-11-15 22:54:42.508 +0330 0001 INFO [chaincodeCmd] chaincodeInvokeOrQuery -> Chaincode invoke successful. result: status:200 payload:"{\"batchNumber\":\"batch1\",\"processingDateTime\":\"2024-11-13\",\"certificationHash\":\"certHash123\"}"
+
+ndb2@NDB:~/hyperledger_fabric/fabric-samples/test-network$ peer chaincode query -C mychannel -n batch -c '{"function":"queryBatchData","Args":["batch1"]}'
+{"batchNumber":"batch1","processingDateTime":"2024-11-13","certificationHash":"certHash123"}
+ndb2@NDB:~/hyperledger_fabric/fabric-samples/test-network$
+
+
+peer chaincode query -C mychannel -n batch -c '{"function":"getAllKeys","Args":[]}'
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"storeBatchData","Args":["batch2", "2024-11-14", "certHash124"]}'
