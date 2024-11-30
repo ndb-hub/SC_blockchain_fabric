@@ -74,13 +74,13 @@ class BatchContract {
 
         const batchNumber = args[0];
         const testResultsHash = args[1];
-        const testerInfo = args[2];
+        const IPFS_CID = args[2];
         const testingDateTime = args[3];
 
         const qualityData = {
             batchNumber,
             testResultsHash,
-            testerInfo,
+            IPFS_CID,
             testingDateTime,
             step: 'Quality Control'
         };
