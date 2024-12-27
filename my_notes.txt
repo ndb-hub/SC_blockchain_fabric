@@ -109,3 +109,177 @@ peer chaincode query -C mychannel -n batch -c '{"function":"getAllKeys","Args":[
 
 
 peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"storeBatchData","Args":["batch2", "2024-11-14", "certHash124"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"storeBatchData","Args":["batch3", "2024-11-23", "certHash125"]}'
+
+
+######################starting IPFS:
+ndb2@NDB:~/go-ipfs$ ipfs --version
+ipfs version 0.21.0
+ndb2@NDB:~/go-ipfs$ ipfs init
+generating ED25519 keypair...done
+peer identity: 12D3KooWKFuGHEvoGVdorVnza2pqhaF52wDUmX5qPGJjjVrE2dnM
+initializing IPFS node at /home/ndb2/.ipfs
+ndb2@NDB:~/go-ipfs$ ipfs daemon
+
+then we dont close this terminal and open a new one:
+ndb2@NDB:~/hyperledger_fabric/my_offchain_data$ ipfs add processing_logs.txt
+added QmUsrjDgkLxpDJNQ1pTH3Xoyb6UdsHR11EfkmVTtSsPr21 processing_logs.txt
+ 725 B / 725 B [===============================================================================================] 100.00%ndb2@NDB:~/hyperledger_fabric/my_offchain_data$
+
+###################################################
+
+ndb2@NDB:~/hyperledger_fabric/fabric-samples/test-network$ peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeBatchData","Args":["batch4", "2024-11-24", "QmUsrjDgkLxpDJNQ1pTH3Xoyb6UdsHR11EfkmVTtSsPr21"]}'
+2024-11-24 10:02:36.848 +0330 0001 INFO [chaincodeCmd] chaincodeInvokeOrQuery -> Chaincode invoke successful. result: status:200 payload:"{\"batchNumber\":\"batch4\",\"processingDateTime\":\"2024-11-24\",\"certificationHash\":\"QmUsrjDgkLxpDJNQ1pTH3Xoyb6UdsHR11EfkmVTtSsPr21\",\"step\":\"Processing\"}"
+ndb2@NDB:~/hyperledger_fabric/fabric-samples/test-network$ peer chaincode query -C mychannel -n batch -c '{"function":"getAllKeys","Args":[]}'
+[{"Key":"batch1","Record":"{\"batchNumber\":\"batch1\",\"processingDateTime\":\"2024-11-13\",\"certificationHash\":\"certHash123\"}"},{"Key":"batch2","Record":"{\"batchNumber\":\"batch2\",\"processingDateTime\":\"2024-11-14\",\"certificationHash\":\"certHash124\",\"step\":\"Processing\"}"},{"Key":"batch3","Record":"{\"batchNumber\":\"batch3\",\"processingDateTime\":\"2024-11-23\",\"certificationHash\":\"certHash125\",\"step\":\"Processing\"}"},{"Key":"batch4","Record":"{\"batchNumber\":\"batch4\",\"processingDateTime\":\"2024-11-24\",\"certificationHash\":\"QmUsrjDgkLxpDJNQ1pTH3Xoyb6UdsHR11EfkmVTtSsPr21\",\"step\":\"Processing\"}"}]
+ndb2@NDB:~/hyperledger_fabric/fabric-samples/test-network$
+
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeBatchData","Args":["batch5", "2024-11-24", "QmcW2oX6dE35tqoeEZmqmsEWgmtTrqKfEddZnR3TuJWKZg"]}'
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeBatchData","Args":["batch6", "2024-11-25", "QmSX9VE2v6wqkB9cQY6WbCZHB5kmRzDYzp82ifnQto3zZ9"]}'
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeQualityControlData","Args":["batch5","4a7eecffb435e18feaffc568c97488cd458c6ab1279f1ef8fffda1ddf3ec5377","QmYxgyELdQ1A8oPG3KqTFtmdCLpAYUGFUqtEmuW6HAbYLj","2024-11-25"]}'
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeQualityControlData","Args":["batch6","2235bc705a92a8efb10ac319e8925b9524e0d8111bb2dcfd28cc5df2f01a41e4","QmXcEvTDo8G1bXhUtHPmFL5RPbU1RwAowPzvuq5bpPyZa5","2024-11-26"]}'
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storePackagingData","Args":["batch5", "2024-11-27", "QmPUrRoHe6hSFYJeYNvrqfCy7FYJBXPp1QYcraHvNfbfBz", "[\"5-1-001\", \"5-1-050\",\"5-1-473\",\"5-4-475\",\"5-4-120\", \"5-4-085\",\"5-20-003\"]"]}'
+
+
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"detectProcessingFraud","Args":["batch5"]}'
+
+
+@@@@@@@@@@@@docker network inspect my_custom_network
+
+docker run -it --network=my_custom_network alpine /bin/sh
+apk add curl
+curl http://172.18.0.2:5001/api/v0/version
+
+
+@@@@@@@@@@@@@@@@@@@@@@ forget ipfs for now and try enc/decrypt report instead:
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeBatchData","Args":["batch1", "2024-11-13", "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"]}'
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"detectProcessingFraud","Args":["batch1"]}'
+
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeQualityControlData","Args":["batch1","91adcf371884d990f562887b2113ec8e01b8029f236bde6a6b775e2d7d0b9a37","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","2024-11-14"]}'
+
