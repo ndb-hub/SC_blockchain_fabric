@@ -76,14 +76,15 @@ class BatchContract {
             // args[0]: batchNumber
             return await this.detectPackagingFraud(stub, args[0]);
         }else if (func === 'detectWarehousingFraud') {
-            // args[0]: batchNumber
             return await this.detectWarehousingFraud(stub, args);
+        }else if (func === 'detectTestingFraud') {
+            return await this.detectTestingFraud(stub, args);
         } else {
             console.error(`No function named ${func} found`);
             return shim.error(new Error(`No function named ${func} found`));
         }
     }
-
+    
     async getIPFSFile(cid) {
         try {
             const file = await ipfs.cat(cid);
@@ -241,16 +242,19 @@ class BatchContract {
         warehouseData.inventory += 1;
 
         // Add or update package details in the batch
-        batchData.packages[packageID] = {
-            packageID,
+        // Store the Warehousing step
+        if (!batchData.packages[packageID]) {
+            batchData.packages[packageID] = { steps: [] };
+        }
+        batchData.packages[packageID].steps.push({
             entryTime,
             warehouse: {
                 building: warehouse,
-                inventory: warehouseData.inventory // Updated inventory count for the specific warehouse
+                inventory: warehouseData.inventory
             },
             report,
             step: 'Warehousing'
-        };
+        });
 
         // Save updated batch data back to the blockchain
         await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
@@ -265,28 +269,46 @@ class BatchContract {
 
     // 5. Testing (Post-Warehouse) Step
     async storeTestingData(stub, args) {
-        if (args.length !== 5) {
-            return shim.error('Incorrect number of arguments. Expecting : batchNumber, packageNumber, testResultsHash, testerInfo, testingDateTime');
+        if (args.length !== 4) {
+            return shim.error('Incorrect number of arguments. Expecting 4: batchNumber, packageID, testingDate, report');
         }
+
         const batchNumber = args[0];
-        const packageNumber = args[1];
-        const testResultsHash = args[2];
-        const testerInfo = args[3];
-        const testingDateTime = args[4];
-
-        const testingData = {
-            batchNumber,
-            packageNumber,
-            testResultsHash,
-            testerInfo,
-            testingDateTime,
+        const packageID = args[1];
+        const testingDate = args[2];
+        const report = args[3];
+    
+        console.log(`Storing Testing Data: Batch: ${batchNumber}, Package: ${packageID}`);
+    
+        // Retrieve the existing batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found. Cannot store testing data.`);
+        }
+    
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+    
+        // Ensure the package exists in the batch
+        let packageData = batchData.packages && batchData.packages[packageID];
+        if (!packageData) {
+            return shim.error(`Package ${packageID} not found in batch ${batchNumber}.`);
+        }
+    
+        // Add the Testing step to the steps array
+        packageData.steps.push({
+            testingDate,
+            report,
             step: 'Testing'
-        };
-
-        await stub.putState(packageNumber, Buffer.from(JSON.stringify(testingData)));
-        console.log('Testing Data Stored:', testingData);
-        return shim.success(Buffer.from(JSON.stringify(testingData)));
+        });
+    
+        // Save the updated batch data back to the ledger
+        batchData.packages[packageID] = packageData;
+        await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
+    
+        console.log(`Testing data stored successfully for Batch ${batchNumber}, Package ${packageID}.`);
+        return shim.success("Testing data stored successfully.");
     }
+    
 
     // 6. Distribution Step
     async storeDistributionData(stub, args) {
@@ -924,8 +946,8 @@ class BatchContract {
 
     async detectWarehousingFraud(stub, args) {
         const batchNumber=args[0];
-        const packageID_1=args[1];
-        console.log(`batchNumber: ${batchNumber}, packageID: ${packageID_1}`);
+        const packageID=args[1];
+        console.log(`batchNumber: ${batchNumber}, packageID: ${packageID}`);
         // Retrieve batch data
         let batchDataAsBytes = await stub.getState(batchNumber);
         if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
@@ -935,18 +957,24 @@ class BatchContract {
         let batchData = JSON.parse(batchDataAsBytes.toString());
     
         // Ensure the Warehousing step exists for the specified package
-        let packageData = batchData.packages && batchData.packages[packageID_1];
+        let packageData = batchData.packages && batchData.packages[packageID];
         if (!packageData) {
             return shim.error(`Package ${packageID} not found in batch ${batchNumber}.`);
         }
     
-        console.log(`Verifying Warehousing Step Data for Batch: ${batchNumber}, Package: ${packageID_1}`);
+        console.log(`Verifying Warehousing Step Data for Batch: ${batchNumber}, Package: ${packageID}`);
     
+        // Fetch the Warehousing step details from the steps array
+        const warehousingStep = packageData.steps && packageData.steps.find(step => step.step === 'Warehousing');
+        if (!warehousingStep) {
+            return shim.error(`Warehousing step data not found for Package ${packageID} in Batch ${batchNumber}.`);
+        }
+
         // Fetch Warehousing-specific details
-        const { packageID, entryTime, warehouse, report } = packageData;
+        const { entryTime, warehouse, report } = warehousingStep;
     
         // Check if required data is present
-        if (!packageID || !entryTime || !warehouse || !report) {
+        if ( !entryTime || !warehouse || !report) {
             return shim.error(`Missing critical Warehousing data for batch ${batchNumber}, package ${packageID}. Possible fraud.`);
         }
     
@@ -989,7 +1017,7 @@ class BatchContract {
             fraudMessages.push('Inventory count not found in the warehousing report.');
         } else {
             const reportedInventory = parseInt(inventoryMatch[1], 10);
-            if (reportedInventory !== packageData.warehouse.inventory) {
+            if (reportedInventory !== warehouse.inventory) {
                 fraudMessages.push(`Mismatch in inventory count for package ${packageID} in batch ${batchNumber}. Reported: ${reportedInventory}, Actual: ${packageData.warehouse.inventory}.`);
             }
         }
@@ -1016,9 +1044,13 @@ class BatchContract {
         }
     
         // Example 4: Verify warehouse location
-        if (warehouse.building !== packageData.warehouse.building) {
-            fraudMessages.push(`Mismatch in warehouse location for package ${packageID} in batch ${batchNumber}. Expected: ${packageData.warehouse.building}, Found: ${warehouse}.`);
+        const LocationPattern = /Warehouse Location:[\s\S]*?Building\s*([\w-]+)/;
+        const LocationMatch = decryptedContent.match(LocationPattern);
+        const foundBuilding = LocationMatch[1]; 
+        if (warehouse.building !== foundBuilding) { 
+            fraudMessages.push(`Mismatch in warehouse location for package ${packageID} in batch ${batchNumber}. Expected: ${warehouse.building}, Found: ${foundBuilding}.`);
         }
+
 
         const containerIntegrityPattern = /Container integrity: No damage or leakage/;
         if (!containerIntegrityPattern.test(decryptedContent)) {
@@ -1062,6 +1094,189 @@ class BatchContract {
             return shim.success("Warehousing checks passed successfully.");
         }
     }
+
+    async detectTestingFraud(stub, args) {
+        const batchNumber = args[0];
+        const packageID = args[1];
+        console.log(`batchNumber: ${batchNumber}, packageID: ${packageID}`);
+    
+        // Retrieve batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found. Cannot perform fraud detection.`);
+        }
+    
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+    
+        // Ensure the package exists in the batch
+        let packageData = batchData.packages && batchData.packages[packageID];
+        if (!packageData) {
+            return shim.error(`Package ${packageID} not found in batch ${batchNumber}.`);
+        }
+    
+        // Ensure the Testing step exists
+        const TestingStep = packageData.steps && packageData.steps.find(step => step.step === 'Testing');
+        if (!TestingStep) {
+            return shim.error(`Testing step data not found for Package ${packageID} in Batch ${batchNumber}.`);
+        }
+        const { testingDate, report } = TestingStep;        
+    
+        // Check if required data is present
+        if (!testingDate || !report) {
+            return shim.error(`Missing critical Testing data for batch ${batchNumber}, package ${packageID}. Possible fraud.`);
+        }
+    
+        const fraudMessages = [];
+    
+        // Validate Testing date
+        const testingDateObj = new Date(testingDate);
+        const currentDate = new Date();    
+    
+        // Ensure the previous step (Warehousing) exists and validate timing
+        const warehousingStep = packageData.steps && packageData.steps.find(step => step.step === 'Warehousing');
+        if (warehousingStep) {
+            const warehousingDate = new Date(warehousingStep.entryTime);
+            if (testingDateObj < warehousingDate) {
+                return shim.error(`Testing date is before warehousing date for batch ${batchNumber}, package ${packageID}. Fraud detected.`);
+            }
+        } else {
+            return shim.error(`Warehousing step data not found for batch ${batchNumber}. Cannot validate testing date.`);
+        }
+        if (testingDateObj > currentDate) {
+            return shim.error(`Testing date is in the future for batch ${batchNumber}, package ${packageID}. Fraud detected.`);
+        }
+    
+        // Decrypt the Testing report
+        const decryptedContent = decrypt(report); // Replace with your decryption logic
+        console.log(`Decrypted Content for Batch ${batchNumber}, Package ${packageID}:`, decryptedContent);
+    
+        // Step 4: Fraud Detection Logic
+        // Example 1: Check for consistency in batch and package details
+        // Example 1: Extract and verify batch number from the report
+        const batchNumberPattern = /Batch Number:\s*(\d+)/;
+        const batchNumberMatch = decryptedContent.match(batchNumberPattern);
+        if (!batchNumberMatch || `batch${batchNumberMatch[1]}` !== batchNumber) {
+            fraudMessages.push(`Mismatch in batch number: expected ${batchNumber}, found ${batchNumberMatch ? `batch${batchNumberMatch[1]}` : 'none'}.`);
+        }
+
+        // Example 1: Extract and verify packageID from the report
+        const packageIDPattern = /PackageID:\s*(\d+-\d+-\d+)/;
+        const packageIDMatch = decryptedContent.match(packageIDPattern);
+        if (!packageIDMatch || packageIDMatch[1] !== packageID) {
+            fraudMessages.push(`Mismatch in packageID: expected ${packageID}, found ${packageIDMatch ? `package${packageIDMatch[1]}` : 'none'}.`);
+        }
+
+    
+        // Example 2: Verify personnel roles are documented in the report
+        const requiredRoles = ['CQI', 'ATS', 'LQA'];
+        const missingRoles = requiredRoles.filter(role => !decryptedContent.includes(role));
+        if (missingRoles.length > 0) {
+            fraudMessages.push(`Missing roles in Testing report: ${missingRoles.join(', ')}.`);
+        }
+    
+        // Fetch Quality Control-specific details
+        let qcReport;
+        let qcStep = batchData.steps.find(step => step.step === 'Quality Control');
+        if (!qcStep) {
+            return shim.error(`Quality Control data not found for batch ${batchNumber}.`);
+        } else {
+            qcReport = decrypt(qcStep.report); // Decrypt Quality Control report
+            if (!qcReport) {
+                fraudMessages.push(`Quality Control report missing for batch ${batchNumber}.`);
+            }
+        }
+        console.log(`qcReport for Batch ${batchNumber}:`, qcReport);
+ 
+        
+
+        const extractTestResults = (reportText) => {
+            if (!reportText || typeof reportText !== 'string') {
+                throw new Error('Invalid or empty report text provided.');
+            }
+            
+            const testSummaryRegex = /Summary([\s\S]+?)(?=Equipment\sUsed|Security\sand\sLogging|$)/;
+            const match1 = testSummaryRegex.exec(reportText);
+            const testSummaryText = match1[1].trim();
+        
+            const resultRegex = /([A-Za-z\s]+):\s*(\w+)\s?\(([^)]+)\)/g;
+            let testResults = [];
+            let match;
+        
+            // Use regex to find all matching test results
+            while ((match = resultRegex.exec(testSummaryText)) !== null) {
+                const testName = match[1].trim();  // Test name
+                const testStatus = match[2];  // Test status (e.g., Passed, Failed)
+                const testValue = match[3];  // Test value or details
+        
+                testResults.push({
+                    name: testName,
+                    status: testStatus,
+                    value: testValue
+                });
+            }
+            return testResults;
+        };
+        
+        const compareTestResults = (qualityControlReport, testingReport) => {
+            const qcResults = extractTestResults(qualityControlReport);
+            const testingResults = extractTestResults(testingReport);
+        
+            let fraudMessages = [];
+        
+            // Map QC test results by test name for easier comparison
+            let qcResultsMap = {};
+            for (const result of qcResults) {
+                qcResultsMap[result.name] = parseFloat(result.value.match(/([\d\.]+)/)[0]);
+            }
+        
+            // Compare results with Testing stage
+            for (const test of testingResults) {
+                const testName = test.name;
+                const testValue = parseFloat(test.value.match(/([\d\.]+)/)[0]);
+        
+                if (qcResultsMap[testName] !== undefined) {
+                    const qcValue = qcResultsMap[testName]; 
+                    console.log(`Test: ${testName}, QC Value: ${qcValue}, Test Value: ${testValue}, Difference: ${testValue - qcValue}`);
+       
+                    // Check for discrepancy greater than 1.0
+                    if (Math.abs(testValue - qcValue) > 1.0) {
+                        fraudMessages.push(
+                            `Fraud detected: ${testName} discrepancy between Quality Control (${qcValue}) and Testing (${testValue}) exceeds acceptable limit.`
+                        );
+                    }
+                } else {
+                    fraudMessages.push(`Test ${testName} is missing in Quality Control results.`);
+                }
+            }
+        
+            return fraudMessages;
+        };
+
+        if (!qcReport || !decryptedContent) {
+            throw new Error(`Either Quality Control or Testing report is invalid or missing.`);
+        }
+        const resultMessages = compareTestResults(qcReport, decryptedContent);
+        console.log('Result Messages:', resultMessages);
+
+        // Ensure resultMessages is an array and merge it with fraudMessages
+        if (resultMessages && Array.isArray(resultMessages)) {
+            fraudMessages.push(...resultMessages);
+        } else if (resultMessages) {
+            // If resultMessages is not an array, push it directly
+            fraudMessages.push(resultMessages);
+        }
+    
+        
+    
+        // If any fraud messages exist, return them, otherwise return success
+        if (fraudMessages.length > 0) {
+            return shim.error(fraudMessages.join("\n"));
+        } else {
+            console.log("Testing checks passed successfully.");
+            return shim.success("Testing checks passed successfully.");
+        }
+    }
+    
     
     
     
