@@ -75,6 +75,9 @@ class BatchContract {
         }else if (func === 'detectPackagingFraud') {
             // args[0]: batchNumber
             return await this.detectPackagingFraud(stub, args[0]);
+        }else if (func === 'detectWarehousingFraud') {
+            // args[0]: batchNumber
+            return await this.detectWarehousingFraud(stub, args);
         } else {
             console.error(`No function named ${func} found`);
             return shim.error(new Error(`No function named ${func} found`));
@@ -199,14 +202,14 @@ class BatchContract {
     // 4. Warehousing Step
     async storeWarehousingData(stub, args) {
         if (args.length !== 5) {
-            return shim.error('Incorrect number of arguments. Expecting 5: batchNumber, packageNumber, location, entryExitHash, inventoryHash');
+            return shim.error('Incorrect number of arguments. Expecting 5: batchNumber, packageID, entryTime, warehouse, report');
         }
 
         const batchNumber = args[0];
-        const packageNumber = args[1];
-        const location = args[2];
-        const entryExitHash = args[3];
-        const inventoryHash = args[4];
+        const packageID = args[1];
+        const entryTime = args[2];
+        const warehouse = args[3];
+        const report = args[4]; 
 
         // Fetch existing batch data
         let batchDataBytes = await stub.getState(batchNumber);
@@ -218,24 +221,42 @@ class BatchContract {
             return shim.error(`Batch ${batchNumber} not found. Ensure batch data exists before warehousing.`);
         }
 
-        // Initialize the warehousing step if not already present
-        if (!batchData.warehousing) {
-            batchData.warehousing = {
-                packages: {}
-            };
+        // Initialize packages if not already present
+        if (!batchData.packages) {
+            batchData.packages = {};
         }
 
-        // Add or update package details in the warehousing step
-        batchData.warehousing.packages[packageNumber] = {
-            packageNumber,
-            location,
-            entryExitHash,
-            inventoryHash,
+        // Fetch existing warehouse data (locations are stored separately)
+        let warehouseDataBytes = await stub.getState(warehouse);
+        let warehouseData;
+
+        if (warehouseDataBytes && warehouseDataBytes.length > 0) {
+            warehouseData = JSON.parse(warehouseDataBytes.toString());
+        } else {
+            // If warehouse data doesn't exist, initialize it with inventory = 0
+            warehouseData = { warehouse, inventory: 0 };
+        }
+
+        // Increment inventory count for the specific warehouse (e.g., Warehouse B)
+        warehouseData.inventory += 1;
+
+        // Add or update package details in the batch
+        batchData.packages[packageID] = {
+            packageID,
+            entryTime,
+            warehouse: {
+                building: warehouse,
+                inventory: warehouseData.inventory // Updated inventory count for the specific warehouse
+            },
+            report,
             step: 'Warehousing'
         };
 
         // Save updated batch data back to the blockchain
         await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
+
+        // Save updated warehouse data back to the blockchain (only for the relevant warehouse)
+        await stub.putState(warehouse, Buffer.from(JSON.stringify(warehouseData)));
 
         console.log('Warehousing Data Stored:', batchData);
         return shim.success(Buffer.from(JSON.stringify(batchData)));
@@ -900,6 +921,148 @@ class BatchContract {
             return shim.success("Packaging checks passed successfully.");
         }
     }
+
+    async detectWarehousingFraud(stub, args) {
+        const batchNumber=args[0];
+        const packageID_1=args[1];
+        console.log(`batchNumber: ${batchNumber}, packageID: ${packageID_1}`);
+        // Retrieve batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found. Cannot perform fraud detection.`);
+        }
+    
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+    
+        // Ensure the Warehousing step exists for the specified package
+        let packageData = batchData.packages && batchData.packages[packageID_1];
+        if (!packageData) {
+            return shim.error(`Package ${packageID} not found in batch ${batchNumber}.`);
+        }
+    
+        console.log(`Verifying Warehousing Step Data for Batch: ${batchNumber}, Package: ${packageID_1}`);
+    
+        // Fetch Warehousing-specific details
+        const { packageID, entryTime, warehouse, report } = packageData;
+    
+        // Check if required data is present
+        if (!packageID || !entryTime || !warehouse || !report) {
+            return shim.error(`Missing critical Warehousing data for batch ${batchNumber}, package ${packageID}. Possible fraud.`);
+        }
+    
+        const fraudMessages = [];
+    
+        // Validate warehousing entry time
+        const warehousingDate = new Date(entryTime);
+        const currentDate = new Date();
+    
+        // Ensure the previous step (Packaging) exists and validate timing
+        if (batchData.Packaging) {
+            const packagingDate = new Date(batchData.Packaging.packagingDateTime);
+            if (warehousingDate < packagingDate) {
+                return shim.error(`Warehousing entry time is before packaging date for batch ${batchNumber}, package ${packageID}. Fraud detected.`);
+            }
+        } else {
+            return shim.error(`Packaging step data not found for batch ${batchNumber}. Cannot validate warehousing entry time.`);
+        }
+        if (warehousingDate > currentDate) {
+            return shim.error(`Warehousing entry time is in the future for batch ${batchNumber}, package ${packageID}. Fraud detected.`);
+        }
+    
+        // Decrypt the Warehousing report
+        const decryptedContent = decrypt(report); // Replace with your decryption logic
+        console.log(`Decrypted Content for Batch ${batchNumber}, Package ${packageID}:`, decryptedContent);
+    
+        // Step 4: Fraud Detection Logic
+    
+        // Example 1: Extract and verify batch number from the report
+        const batchNumberPattern = /Batch Number:\s*(\d+)/;
+        const batchNumberMatch = decryptedContent.match(batchNumberPattern);
+        if (!batchNumberMatch || `batch${batchNumberMatch[1]}` !== batchNumber) {
+            fraudMessages.push(`Mismatch in batch number: expected ${batchNumber}, found ${batchNumberMatch ? `batch${batchNumberMatch[1]}` : 'none'}.`);
+        }
+    
+        // Example 2: Check for reported warehouse issues (e.g., incorrect inventory)
+        const inventoryPattern = /Inventory Count Update[\s\S]*?Total packages in the warehouse after this entry:\s*(\d+)/;
+        const inventoryMatch = decryptedContent.match(inventoryPattern);
+        if (!inventoryMatch) {
+            fraudMessages.push('Inventory count not found in the warehousing report.');
+        } else {
+            const reportedInventory = parseInt(inventoryMatch[1], 10);
+            if (reportedInventory !== packageData.warehouse.inventory) {
+                fraudMessages.push(`Mismatch in inventory count for package ${packageID} in batch ${batchNumber}. Reported: ${reportedInventory}, Actual: ${packageData.warehouse.inventory}.`);
+            }
+        }
+
+    
+        // Example 3: Check if required personnel are listed in the report
+        const requiredRoles = ['PQAO', 'WS'];
+        const missingRoles = [];
+    
+        for (const role of requiredRoles) {
+            if (!decryptedContent.includes(role)) {
+                missingRoles.push(role);
+            }
+        }
+    
+        if (missingRoles.length > 0) {
+            fraudMessages.push(`Missing roles in the report: ${missingRoles.join(', ')}.`);
+        }
+
+        const cctvPattern = /CCTV Monitoring:[\s\S]*?file reference\s*([\w-]+)/;
+        const cctvMatch = decryptedContent.match(cctvPattern);
+        if (!cctvMatch) {
+            fraudMessages.push('CCTV monitoring details not found in the warehousing report.');
+        }
+    
+        // Example 4: Verify warehouse location
+        if (warehouse.building !== packageData.warehouse.building) {
+            fraudMessages.push(`Mismatch in warehouse location for package ${packageID} in batch ${batchNumber}. Expected: ${packageData.warehouse.building}, Found: ${warehouse}.`);
+        }
+
+        const containerIntegrityPattern = /Container integrity: No damage or leakage/;
+        if (!containerIntegrityPattern.test(decryptedContent)) {
+            fraudMessages.push('Container integrity verification is missing or indicates tampering.');
+        }
+
+        const temperaturePattern = /Temperature: Maintained at\s*([\d.]+)/;
+        const humidityPattern = /Humidity Level:\s*([\d.]+)/;
+        const tempMatch = decryptedContent.match(temperaturePattern);
+        const humidityMatch = decryptedContent.match(humidityPattern);
+
+        if (tempMatch && humidityMatch) {
+            const temperature = parseFloat(tempMatch[1]);
+            const humidity = parseFloat(humidityMatch[1]);
+
+            // Replace these thresholds with the specific storage requirements for motor oil
+            const minTemp = 10, maxTemp = 30;
+            const minHumidity = 20, maxHumidity = 60;
+
+            if (temperature < minTemp || temperature > maxTemp) {
+                fraudMessages.push(`Temperature out of range: ${temperature}°C. Expected: ${minTemp}-${maxTemp}°C.`);
+            }
+            if (humidity < minHumidity || humidity > maxHumidity) {
+                fraudMessages.push(`Humidity out of range: ${humidity}%. Expected: ${minHumidity}-${maxHumidity}%.`);
+            }
+        } else {
+            fraudMessages.push('Temperature and humidity data missing in the warehousing report.');
+        }
+
+        const labelIntegrityPattern = /Label condition: Batch details match the blockchain record/;
+        if (!labelIntegrityPattern.test(decryptedContent)) {
+            fraudMessages.push('Label condition verification is missing or indicates mismatch with blockchain records.');
+        }
+
+    
+        // If any fraud messages exist, return them, otherwise return success
+        if (fraudMessages.length > 0) {
+            return shim.error(fraudMessages.join("\n"));
+        } else {
+            console.log("Warehousing checks passed successfully.");
+            return shim.success("Warehousing checks passed successfully.");
+        }
+    }
+    
     
     
 
