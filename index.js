@@ -72,11 +72,15 @@ class BatchContract {
         } else if (func === 'detectQualityControlFraud') {
             // args[0]: batchNumber
             return await this.detectQualityControlFraud(stub, args[0]);
+        }else if (func === 'detectPackagingFraud') {
+            // args[0]: batchNumber
+            return await this.detectPackagingFraud(stub, args[0]);
         } else {
             console.error(`No function named ${func} found`);
             return shim.error(new Error(`No function named ${func} found`));
         }
     }
+
     async getIPFSFile(cid) {
         try {
             const file = await ipfs.cat(cid);
@@ -114,14 +118,13 @@ class BatchContract {
     }
 
     async storeQualityControlData(stub, args) {
-        if (args.length !== 4) {
-            return shim.error('Incorrect number of arguments. Expecting 4: batchNumber, testResultsHash, report, testingDateTime');
+        if (args.length !== 3) {
+            return shim.error('Incorrect number of arguments. Expecting 3: batchNumber, report, testingDateTime');
         }
     
         const batchNumber = args[0];
-        const testResultsHash = args[1];
-        const report = args[2];
-        const testingDateTime = args[3];
+        const report = args[1];
+        const testingDateTime = args[2];
     
         // Fetch existing batch data
         let batchDataAsBytes = await stub.getState(batchNumber);
@@ -143,8 +146,6 @@ class BatchContract {
     
         // Append Quality Control step data
         batchData.steps.push({
-            
-            testResultsHash,
             report,
             testingDateTime,
             step: 'Quality Control'
@@ -155,18 +156,16 @@ class BatchContract {
         console.log('Updated batch data:', batchData);
         return shim.success(Buffer.from(JSON.stringify(batchData)));
     }
-    
-
 
     // 3. Packaging Step
     async storePackagingData(stub, args) {
         if (args.length !== 4) {
-            return shim.error('Incorrect number of arguments. Expecting 4: batchNumber, packagingDateTime, IPFS_CID, containerIssues');
+            return shim.error('Incorrect number of arguments. Expecting 4: batchNumber, packagingDateTime, report, containerIssues');
         }
 
         const batchNumber = args[0];
         const packagingDateTime = args[1];
-        const IPFS_CID = args[2];
+        const report = args[2];
         const containerIssues = JSON.parse(args[3]); // Expecting a JSON array of container issues like underfilling or sealing issues
 
         // Fetch existing batch data
@@ -181,7 +180,7 @@ class BatchContract {
         // Add/Update Packaging Step Data
         const packagingData = {
             packagingDateTime,
-            IPFS_CID,
+            report,
             containerIssues,
             step: 'Packaging'
         };
@@ -427,30 +426,6 @@ class BatchContract {
             fraudMessages.push('Processing temperature not found in the report.');
         }
 
-        // Example 3: Check for required personnel signature
-        // const personnelPattern = /Name:\s*(.+?)\s*Role:\s*(.+?)(?:\n|$)/g; // Updated regex
-        // let personnelMatch;
-        // let operatorFound = false;
-
-        // while ((personnelMatch = personnelPattern.exec(decryptedContent)) !== null) {
-        //     console.log(`Matched Name: ${personnelMatch[1]}`);
-        //     console.log(`Matched Role: ${personnelMatch[2]}`);
-        //     const name = personnelMatch[1].trim();
-        //     const role = personnelMatch[2].trim().toLowerCase(); // Normalize to lowercase
-        //     console.log(`Found Personnel - Name: ${name}, Role: ${role}`);
-            
-        //     // Match role containing 'operator'
-        //     if (role.includes('operator')) {
-        //         operatorFound = true;
-        //         console.log(`Operator role detected: ${name} (${role})`);
-        //         break; // Stop as soon as we find an operator
-        //     }
-        // }
-
-        // // Add fraud message if no operator found
-        // if (!operatorFound) {
-        //     fraudMessages.push('Operator signature missing in the report.');
-        // }
         const requiredRoles = ['EMS', 'MHE', 'CQI'];
         const missingRoles = [];
 
@@ -612,10 +587,10 @@ class BatchContract {
         console.log(`Verifying Quality Control Step Data for Batch: ${batchNumber}`);
     
         // Fetch Quality Control-specific details
-        const { testResultsHash, report, testingDateTime } = qcStep;
+        const { report, testingDateTime } = qcStep;
     
         // Check if required data is present
-        if (!testResultsHash || !report || !testingDateTime) {
+        if ( !report || !testingDateTime) {
             return shim.error(`Missing critical Quality Control data for batch ${batchNumber}. Possible fraud.`);
         }
 
@@ -780,16 +755,154 @@ class BatchContract {
             console.log("Quality control checks passed successfully.");
             return shim.success("Quality control checks passed successfully.");
         }
+    }
 
-    
-        // Recalculate and validate the test results hash
-        const recalculatedHash = crypto.createHash('sha256').update(decryptedContent).digest('hex');
-        if (recalculatedHash !== testResultsHash) {
-            return shim.error(`Test results hash mismatch for batch ${batchNumber}. Possible tampering detected.`);
+    async detectPackagingFraud(stub, batchNumber) {
+        // Retrieve batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found. Cannot perform fraud detection.`);
         }
     
-        return shim.success(Buffer.from(`Quality Control data for batch ${batchNumber} passed fraud detection.`));
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+        
+        // Ensure the Packaging step exists
+        let packagingStep = batchData.Packaging;
+        if (!packagingStep) {
+            return shim.error(`Packaging data not found for batch ${batchNumber}.`);
+        }
+    
+        console.log(`Verifying Packaging Step Data for Batch: ${batchNumber}`);
+    
+        // Fetch Packaging-specific details
+        const { packagingDateTime, report, containerIssues } = packagingStep;
+    
+        // Check if required data is present
+        if (!packagingDateTime || !report || !containerIssues) {
+            return shim.error(`Missing critical Packaging data for batch ${batchNumber}. Possible fraud.`);
+        }
+    
+        const fraudMessages = [];
+    
+        // Validate packaging date
+        const packagingDate = new Date(packagingDateTime);
+        const currentDate = new Date();
+    
+        // Ensure the Processing step exists
+        if (batchData.step === 'Processing') {
+            const processingDate = new Date(batchData.processingDateTime);
+            if (packagingDate < processingDate) {
+                return shim.error(`Packaging date is before processing date for batch ${batchNumber}. Fraud detected.`);
+            }
+            let qcStep = batchData.steps.find(step => step.step === 'Quality Control');
+            if (!qcStep) {
+                return shim.error(`Quality Control data not found for batch ${batchNumber}.`);
+            }
+            // Fetch Quality Control-specific details
+            const {  reportqc, testingDateTimeqc } = qcStep;
+            if(packagingDate <testingDateTimeqc){
+                return shim.error(`Packaging date is before quality control date for batch ${batchNumber}. Fraud detected.`);
+            }
+    
+            if (packagingDate > currentDate) {
+                return shim.error(`Packaging date is in the future for batch ${batchNumber}. Fraud detected.`);
+            }
+        } else {
+            return shim.error(`Processing step data not found for batch ${batchNumber}. Cannot validate packaging date.`);
+        }
+    
+        // Decrypt the Packaging report
+        const decryptedContent = decrypt(report); // Replace with your decryption logic
+        console.log(`Decrypted Content for Batch ${batchNumber}:`, decryptedContent);
+    
+        // Step 4: Fraud Detection Logic
+    
+        // Example 1: Extract and verify batch number from report
+        const batchNumberPattern = /Batch Number:\s*(\d+)/;
+        const batchNumberMatch = decryptedContent.match(batchNumberPattern);
+        if (!batchNumberMatch || `batch${batchNumberMatch[1]}` !== batchNumber) {
+            fraudMessages.push(`Mismatch in batch number: expected ${batchNumber}, found ${batchNumberMatch ? `batch${batchNumberMatch[1]}` : 'none'}.`);
+        }
+    
+        // Example 2: Verify if container issues are present in the report
+        if (containerIssues.includes('underfilling') && !decryptedContent.includes('underfilling')) {
+            fraudMessages.push('Reported underfilling issue not found in the packaging report.');
+        }
+        if (containerIssues.includes('sealing issues') && !decryptedContent.includes('sealing issues')) {
+            fraudMessages.push('Reported sealing issue not found in the packaging report.');
+        }
+    
+        // Example 3: Check for required personnel signature
+        const requiredRoles = ['Packaging Supervisor', 'Machine Operator', 'Inspector'];
+        const missingRoles = [];
+    
+        // Check if each role exists in the report
+        for (const role of requiredRoles) {
+            if (!decryptedContent.includes(role)) {
+                missingRoles.push(role);
+            }
+        }
+    
+        // If any roles are missing, return an error
+        if (missingRoles.length > 0) {
+            fraudMessages.push(`Missing roles in the report: ${missingRoles.join(', ')}.`);
+        }
+    
+        // Example 4: Verify equipment used and maintenance status 
+        //const EquipmentUsedRegex = /Final\sInspection([\s\S]+?)(?=Equipment\sUsed|Security\sand\sLogging|$)/;
+        //const match1 = EquipmentUsedRegex.exec(decryptedContent);
+        //const EquipmentUsedText = match1[2].trim();
+         
+        // Example 4: Verify equipment used and maintenance status 
+        const EquipmentUsedRegex = /Final\sInspection([\s\S]+?)(?=Security\sand\sLogging)/;
+        const match1 = EquipmentUsedRegex.exec(decryptedContent);
+        let EquipmentUsedText = '';
+
+        if (!match1 || !match1[1]) {
+            fraudMessages.push('Equipment used details not found in the report.');
+        } else {
+            EquipmentUsedText = match1[1].trim();
+            console.log("EquipmentUsedText: ", EquipmentUsedText);
+
+            const equipmentPattern = /([\w\s\-]+):\s*([\w\-]+)\s*\(Calibrated:\s*([\d\-]+),\s*Valid Until:\s*([\d\-]+)\)/g;
+            let equipmentMatch;
+            const currentDate = new Date();
+
+            while ((equipmentMatch = equipmentPattern.exec(EquipmentUsedText)) !== null) {
+                const equipmentName = equipmentMatch[1].trim();
+                const calibrationDate = new Date(equipmentMatch[3]);
+                const validUntilDate = new Date(equipmentMatch[4]);
+
+                if (validUntilDate < currentDate) {
+                    fraudMessages.push(`Equipment "${equipmentName}" calibration expired on ${equipmentMatch[4]}.`);
+                }
+            }
+        }
+
+
+        // Example 5: Check for counterfeit products 
+        const authenticityMarkersPattern = /Certification Issued:\s*(CERTPKG[\d]+)/; 
+        const authenticityMarkersMatch = decryptedContent.match(authenticityMarkersPattern); 
+        if (!authenticityMarkersMatch) { 
+            fraudMessages.push('Authenticity certification not found in the report.'); 
+        } // Example 6: Verify label information 
+        const labelPattern = /Labeling.*?Result:\s*Passed\s*Details:\s*Labels Printed:\s*(\d+)\s*units.*?Labeling Accuracy:/s;
+        const labelMatch = decryptedContent.match(labelPattern); 
+        if (!labelMatch) { 
+            fraudMessages.push('Labeling information not found in the report.'); 
+        }
+    
+        // If any fraud messages exist, return them, otherwise return success
+        if (fraudMessages.length > 0) {
+            return shim.error(fraudMessages.join("\n"));
+        } else {
+            console.log("Packaging checks passed successfully.");
+            return shim.success("Packaging checks passed successfully.");
+        }
     }
+    
+    
+
 }    
 // Start the chaincode
 shim.start(new BatchContract());
