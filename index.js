@@ -79,6 +79,10 @@ class BatchContract {
             return await this.detectWarehousingFraud(stub, args);
         }else if (func === 'detectTestingFraud') {
             return await this.detectTestingFraud(stub, args);
+        }else if (func === 'detectDistributionFraud') {
+            return await this.detectDistributionFraud(stub, args);
+        }else if (func === 'detectServiceCenterFraud') {
+            return await this.detectServiceCenterFraud(stub, args);
         } else {
             console.error(`No function named ${func} found`);
             return shim.error(new Error(`No function named ${func} found`));
@@ -395,26 +399,44 @@ class BatchContract {
 
     // 7. Car Service Centers
     async storeServiceCenterData(stub, args) {
-        if (args.length !== 4) {
-            return shim.error('Incorrect number of arguments. Expecting 4: packageNumber, serviceRecordsHash, serviceDateTime, personnel');
+        if (args.length !== 5) {
+            return shim.error('Incorrect number of arguments. Expecting 5: batchNumber, packageID, ServiceCenterID, date, report');
         }
+    
+        const batchNumber = args[0];
+        const packageID = args[1];
+        const ServiceCenterID = args[2];
+        const date = args[3];
+        const report = args[4];  
 
-        const packageNumber = args[0];
-        const serviceRecordsHash = args[1];
-        const serviceDateTime = args[2];
-        const personnel = args[3];
-
-        const serviceCenterData = {
-            packageNumber,
-            serviceRecordsHash,
-            serviceDateTime,
-            personnel,
+        // Retrieve the existing batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found. Cannot store distribution data.`);
+        }
+    
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+    
+        // Ensure the package exists in the batch
+        let packageData = batchData.packages && batchData.packages[packageID];
+        if (!packageData) {
+            return shim.error(`Package ${packageID} not found in batch ${batchNumber}.`);
+        }
+    
+        // Add the Distribution step with the report to the steps array
+        packageData.steps.push({
+            ServiceCenterID,
+            date,
+            report,  // Store report information
             step: 'Car Service Center'
-        };
+        });
+    
+        // Save the updated batch data back to the ledger
+        batchData.packages[packageID] = packageData;
+        await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
 
-        await stub.putState(packageNumber, Buffer.from(JSON.stringify(serviceCenterData)));
-        console.log('Service Center Data Stored:', serviceCenterData);
-        return shim.success(Buffer.from(JSON.stringify(serviceCenterData)));
+        console.log(`Service Center data stored successfully for Batch ${batchNumber}, Package ${packageID}.`);
+        return shim.success("Service Center data stored successfully.");
     }
 
     // Query function to get batch data
@@ -1378,8 +1400,281 @@ class BatchContract {
             return shim.success("Testing checks passed successfully.");
         }
     }
+
+    async detectDistributionFraud(stub, args) {
+        try {
+            const [batchNumber, packageID] = args;
+            console.log(`batchNumber: ${batchNumber}, packageID: ${packageID}`);
     
+            // Retrieve and validate batch data
+            const batchDataAsBytes = await stub.getState(batchNumber);
+            if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+                throw new Error(`Batch ${batchNumber} not found. Cannot perform fraud detection.`);
+            }
     
+            const batchData = JSON.parse(batchDataAsBytes.toString());
+            const packageData = batchData.packages && batchData.packages[packageID];
+            if (!packageData) {
+                throw new Error(`Package ${packageID} not found in batch ${batchNumber}.`);
+            }
+    
+            const distributionStep = packageData.steps.find(step => step.step === 'Distribution');
+            if (!distributionStep) {
+                throw new Error(`Distribution step data not found for Package ${packageID} in Batch ${batchNumber}.`);
+            }
+    
+            const { warehouse, transportID, destination, dateAndTime, report } = distributionStep;
+            if (!warehouse || !transportID || !destination || !dateAndTime || !report) {
+                throw new Error(`Critical Distribution data missing for batch ${batchNumber}, package ${packageID}.`);
+            }
+    
+            const testingStep = packageData.steps.find(step => step.step === 'Testing');
+            if (!testingStep) {
+                throw new Error(`Testing step data missing for batch ${batchNumber}.`);
+            }
+    
+            // Validate distribution date
+            const distributionDateObj = new Date(dateAndTime);
+            const testingDate = new Date(testingStep.testingDate);
+            const presentDate = new Date();
+    
+            if (distributionDateObj < testingDate) {
+                throw new Error(`Distribution date is before testing date for batch ${batchNumber}, package ${packageID}.`);
+            }
+    
+            if (distributionDateObj > presentDate) {
+                throw new Error(`Distribution date is in the future for batch ${batchNumber}, package ${packageID}.`);
+            }
+    
+            // Decrypt Distribution report
+            const temp_report="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";
+
+            const decryptedContent = decrypt(report); // Replace later
+            console.log(`Decrypted Content:`, decryptedContent);
+    
+            const fraudMessages = [];
+    
+            // Validate transporter information
+            const transporterMatch = decryptedContent.match(/Driver's ID:\s*(\w+)/);
+            if (!transporterMatch ) {
+                fraudMessages.push("Transporter details do not found in the report.");
+            }
+            const VehicleMatch = decryptedContent.match(/Vehicle ID:\s*(\w+-[\d.][\d.])/);
+            if (!VehicleMatch || VehicleMatch[1] !== transportID) {
+                fraudMessages.push("Vehicle details do not match the recorded information.");
+            }
+
+            // Check for warehouse inventory adjustment
+            const collectedPattern = /collected by (.+?) from warehouse ([A-Za-z0-9]+)/i;
+            const collectedMatch = decryptedContent.match(collectedPattern);
+            if (collectedMatch) {
+                const collector = collectedMatch[1];
+                const warehouse_r = collectedMatch[2];
+                console.log(`Collector: ${collector}, Warehouse: ${warehouse_r}`);
+
+                // Retrieve warehouse data
+                let warehouseDataBytes = await stub.getState(warehouse_r);
+                if (!warehouseDataBytes || warehouseDataBytes.length === 0) {
+                    return shim.error(`Warehouse ${warehouse} data not found. Cannot adjust inventory.`);
+                }
+                if (warehouse_r!=warehouse) {
+                    fraudMessages.push(`Mismatch in warehouse: expected ${warehouse}, found ${warehouse_r}.`);
+                }
+            } else {
+                fraudMessages.push("Collector or warehouse information is missing in the report.");
+            }
+    
+            // Validate delivery conditions (temperature, vehicle type)
+            if (!decryptedContent.includes("Temperature: Maintained within the optimal range (15°C–25°C)")) {
+                fraudMessages.push("Temperature control condition not met.");
+            }
+            if (!decryptedContent.includes("Vehicle Type: Temperature-Controlled Transport Truck")) {
+                fraudMessages.push("Incorrect vehicle type for transport.");
+            }
+    
+            // Check for tampering evidence
+            if (!decryptedContent.includes("Tamper-Seal Verification: Verified intact after delivery.")) {
+                fraudMessages.push("Tamper-Seal Verification missing or not verified as intact after delivery.");
+            }
+            // Extract the destination from the report
+            const destinationPattern = /arrived at (.+?) Car Service Center\./;
+            const destinationMatch = decryptedContent.match(destinationPattern);
+            if (!destinationMatch) {
+                fraudMessages.push("Destination information missing in the report.");
+            } else {
+                const extractedDestination = destinationMatch[1].trim();
+                console.log(`Extracted Destination: ${extractedDestination}`);
+
+                // Compare extracted destination with blockchain destination
+                if (extractedDestination !== destination) {
+                    fraudMessages.push(`Destination mismatch: Expected ${destination}, found ${extractedDestination}.`);
+                }
+            }
+
+    
+            // Final fraud validation
+            if (fraudMessages.length > 0) {
+                return shim.error(fraudMessages.join("\n"));
+            }
+    
+            console.log("Distribution checks passed successfully.");
+            return shim.success("Distribution checks passed successfully.");
+        } catch (error) {
+            console.error(`Error in detectDistributionFraud: ${error.message}`);
+            return shim.error(error.message);
+        }
+    }
+
+    async detectServiceCenterFraud(stub, args) {
+        if (args.length !== 2) {
+            return shim.error('Incorrect number of arguments. Expecting 2: batchNumber, packageID');
+        }
+    
+        const batchNumber = args[0];
+        const packageID = args[1];
+    
+        // Retrieve the existing batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found. Cannot check service center data.`);
+        }
+    
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+    
+        // Ensure the package exists in the batch
+        let packageData = batchData.packages && batchData.packages[packageID];
+        if (!packageData) {
+            return shim.error(`Package ${packageID} not found in batch ${batchNumber}.`);
+        }
+    
+        // Check for any service center fraud detected in the steps
+        const serviceCenterStep = packageData.steps.find(step => step.step === 'Car Service Center');
+        if (!serviceCenterStep) {
+            return shim.error(`No service center data found for Package ${packageID} in Batch ${batchNumber}.`);
+        }
+
+        const {ServiceCenterID, date, report } = serviceCenterStep;
+        if (!ServiceCenterID || !date || !report) {
+            throw new Error(`Critical service Center data missing for batch ${batchNumber}, package ${packageID}.`);
+        }
+
+        const distributionStep = packageData.steps.find(step => step.step === 'Distribution');
+        if (!distributionStep) {
+            throw new Error(`Distribution step data not found for Package ${packageID} in Batch ${batchNumber}.`);
+        }
+    
+        // Validate date
+        const ServiceCenterObj = new Date(date);
+        const distributionDate = new Date(distributionStep.dateAndTime);
+        const presentDate = new Date();
+
+        if (ServiceCenterObj < distributionDate) {
+            throw new Error(`ServiceCenter date is before Distribution date for batch ${batchNumber}, package ${packageID}.`);
+        }
+
+        if (ServiceCenterObj > presentDate) {
+            throw new Error(`Distribution date is in the future for batch ${batchNumber}, package ${packageID}.`);
+        }
+    
+        const fraudMessages = [];
+
+        const decryptedContent = decrypt(report); // Replace later with actual decryption logic
+        console.log(`Decrypted Content:`, decryptedContent);
+
+        // Check if the service center report contains relevant information (e.g., service center ID, oil type, etc.)
+        const serviceCenterIDMatch = decryptedContent.match(/delivered to (.+?) Car Service Center/);
+        if (!serviceCenterIDMatch || serviceCenterIDMatch[1] !== ServiceCenterID) {
+            fraudMessages.push("Service center ID in the report does not match the provided ServiceCenterID.");
+        }
+
+        // Extract Oil Type from report
+        const oilTypeMatch = decryptedContent.match(/Oil Type and Grade:\s*(.*?),/);
+        if (!oilTypeMatch) {
+            fraudMessages.push("Oil type information missing in the report.");
+        } else {
+            console.log(`Oil Type:`, oilTypeMatch[1]);
+        }
+
+        const cctvPattern = /CCTV Monitoring:[\s\S]*?file reference\s*([\w-]+)/;
+        const cctvMatch = decryptedContent.match(cctvPattern);
+        if (!cctvMatch) {
+            fraudMessages.push('CCTV monitoring details not found in the warehousing report.');
+        }
+
+        // Extract Pricing Details
+        const serviceFeeMatch = decryptedContent.match(/Service Fee:\s*\$(\d+)/);
+        const oilCostMatch = decryptedContent.match(/Oil Cost:\s*\$(\d+)/);
+        const totalCostMatch = decryptedContent.match(/Total Cost to Customer:\s*\$(\d+)/);
+        const invoiceMatch = decryptedContent.match(/Customer Invoice:\s*(.*?provided)/);
+        const packagesizeMatch=decryptedContent.match(/Package Size:\s*(\d+)L/);
+        
+
+        // Validate Service Fee
+        if (!serviceFeeMatch || serviceFeeMatch[1] !== "70") {
+            fraudMessages.push("Service fee is not correct. Expected $70.");
+        }
+        if (!packagesizeMatch) {
+            fraudMessages.push("package size is missing.");
+        }
+        const packageSize = packagesizeMatch ? parseInt(packagesizeMatch[1], 10) : null; // Convert to number
+
+        if (!packageSize) {
+            fraudMessages.push("Invalid package size.");
+        }
+
+        // Calculate expected oil cost based on package size
+        let expectedOilCost;
+        if (packageSize === 1) {
+            expectedOilCost = 15; // Example: 1L package costs $15
+        } else if (packageSize === 4) {
+            expectedOilCost = 50; // Example: 4L package costs $50
+        } else if (packageSize === 20) {
+            expectedOilCost = 200; // Example: 20L package costs $200
+        } else {
+            fraudMessages.push("Unexpected package size.");
+        }
+
+        // Validate Oil Cost based on expected value
+        if (!oilCostMatch || parseInt(oilCostMatch[1]) !== expectedOilCost) {
+            fraudMessages.push(`Oil cost is not correct for package size ${packageSize}. Expected $${expectedOilCost}.`);
+        }
+
+        // Calculate total cost to customer (Service Fee + Oil Cost)
+        const expectedTotalCost = 70 + expectedOilCost; // Service Fee ($70) + Oil Cost (calculated above)
+
+        // Validate Total Cost to Customer
+        if (!totalCostMatch || parseInt(totalCostMatch[1]) !== expectedTotalCost) {
+            fraudMessages.push(`Total cost to customer is not correct. Expected $${expectedTotalCost}.`);
+        }
+
+        // Check if Customer Invoice was provided
+        if (!invoiceMatch) {
+            fraudMessages.push("Customer invoice information is missing in the report.");
+        }
+
+        // Check Customer Feedback
+
+        const customerFeedbackMatch = decryptedContent.match(/Customer Feedback:\s*(.*)/);
+    
+        if (!customerFeedbackMatch) {
+            fraudMessages.push("Customer feedback missing in the report.");
+        } else {
+            const feedbackText = customerFeedbackMatch[1].toLowerCase();
+            if (feedbackText.includes("significant improvements") || feedbackText.includes("smoother acceleration") || feedbackText.includes("reduced engine noise")) {
+                console.log("Customer feedback is positive.");
+            } else {
+                return shim.error("Customer feedback indicates dissatisfaction. Fraud detected.");
+            }
+        }
+    
+        // If any fraud messages exist, return them, otherwise return success
+        if (fraudMessages.length > 0) {
+            return shim.error(fraudMessages.join("\n"));
+        } else {
+            console.log("Service Center checks passed successfully.");
+            return shim.success("Service Center checks passed successfully.");
+        }
+    }
     
     
 
