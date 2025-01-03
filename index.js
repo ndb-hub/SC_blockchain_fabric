@@ -269,14 +269,16 @@ class BatchContract {
 
     // 5. Testing (Post-Warehouse) Step
     async storeTestingData(stub, args) {
-        if (args.length !== 4) {
-            return shim.error('Incorrect number of arguments. Expecting 4: batchNumber, packageID, testingDate, report');
+        if (args.length !== 6) {
+            return shim.error('Incorrect number of arguments. Expecting 6: batchNumber, packageID,sampleID, testingDate,warehouse, report');
         }
 
         const batchNumber = args[0];
         const packageID = args[1];
-        const testingDate = args[2];
-        const report = args[3];
+        const sampleID=args[2];
+        const testingDate = args[3];
+        const warehouse=args[4];
+        const report = args[5];
     
         console.log(`Storing Testing Data: Batch: ${batchNumber}, Package: ${packageID}`);
     
@@ -296,7 +298,9 @@ class BatchContract {
     
         // Add the Testing step to the steps array
         packageData.steps.push({
+            sampleID,
             testingDate,
+            warehouse,
             report,
             step: 'Testing'
         });
@@ -304,7 +308,22 @@ class BatchContract {
         // Save the updated batch data back to the ledger
         batchData.packages[packageID] = packageData;
         await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
-    
+
+        // Retrieve warehouse data
+        let warehouseDataBytes = await stub.getState(warehouse);
+        if (!warehouseDataBytes || warehouseDataBytes.length === 0) {
+            return shim.error(`Warehouse ${warehouse} data not found. Cannot adjust inventory.`);
+        }
+
+        let warehouseData = JSON.parse(warehouseDataBytes.toString());
+
+        // Check if Sample PackageID matches PackageID
+        if (sampleID === packageID) {
+            warehouseData.inventory -= 1;
+            console.log(`Decremented inventory for Warehouse ${warehouse}: ${warehouseData.inventory}`);
+            // Save updated warehouse data back to the ledger
+            await stub.putState(warehouse, Buffer.from(JSON.stringify(warehouseData)));
+        } 
         console.log(`Testing data stored successfully for Batch ${batchNumber}, Package ${packageID}.`);
         return shim.success("Testing data stored successfully.");
     }
@@ -312,27 +331,67 @@ class BatchContract {
 
     // 6. Distribution Step
     async storeDistributionData(stub, args) {
-        if (args.length !== 4) {
-            return shim.error('Incorrect number of arguments. Expecting 4: packageNumber, transportDetails, distributionDateTime, distributorInfo');
+        if (args.length !== 7) {
+            return shim.error('Incorrect number of arguments. Expecting 7: batchNumber, packageID, warehouse, transportID, destination, dateAndTime, report');
         }
-
-        const packageNumber = args[0];
-        const transportDetails = args[1];
-        const distributionDateTime = args[2];
-        const distributorInfo = args[3];
-
-        const distributionData = {
-            packageNumber,
-            transportDetails,
-            distributionDateTime,
-            distributorInfo,
+    
+        const batchNumber = args[0];
+        const packageID = args[1];
+        const warehouse = args[2];
+        const transportID = args[3];
+        const destination = args[4];
+        const dateAndTime = args[5];
+        const report = args[6];  
+    
+        console.log(`Storing Distribution Data: Batch: ${batchNumber}, Package: ${packageID}, Transport: ${transportID}, Destination: ${destination}, Date: ${dateAndTime}`);
+    
+        // Retrieve the existing batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found. Cannot store distribution data.`);
+        }
+    
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+    
+        // Ensure the package exists in the batch
+        let packageData = batchData.packages && batchData.packages[packageID];
+        if (!packageData) {
+            return shim.error(`Package ${packageID} not found in batch ${batchNumber}.`);
+        }
+    
+        // Add the Distribution step with the report to the steps array
+        packageData.steps.push({
+            warehouse,
+            transportID,
+            destination,
+            dateAndTime,
+            report,  // Store report information
             step: 'Distribution'
-        };
-
-        await stub.putState(packageNumber, Buffer.from(JSON.stringify(distributionData)));
-        console.log('Distribution Data Stored:', distributionData);
-        return shim.success(Buffer.from(JSON.stringify(distributionData)));
+        });
+    
+        // Save the updated batch data back to the ledger
+        batchData.packages[packageID] = packageData;
+        await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
+    
+        // Retrieve warehouse data
+        let warehouseDataBytes = await stub.getState(warehouse);
+        if (!warehouseDataBytes || warehouseDataBytes.length === 0) {
+            return shim.error(`Warehouse ${warehouse} data not found. Cannot adjust inventory.`);
+        }
+    
+        let warehouseData = JSON.parse(warehouseDataBytes.toString());
+    
+        // Update inventory at the warehouse (decrement by 1 for this package)
+        warehouseData.inventory -= 1;
+        console.log(`Decremented inventory for Warehouse ${warehouse}: ${warehouseData.inventory}`);
+    
+        // Save updated warehouse data back to the ledger
+        await stub.putState(warehouse, Buffer.from(JSON.stringify(warehouseData)));
+    
+        console.log(`Distribution data stored successfully for Batch ${batchNumber}, Package ${packageID}.`);
+        return shim.success("Distribution data stored successfully.");
     }
+    
 
     // 7. Car Service Centers
     async storeServiceCenterData(stub, args) {
@@ -1119,7 +1178,7 @@ class BatchContract {
         if (!TestingStep) {
             return shim.error(`Testing step data not found for Package ${packageID} in Batch ${batchNumber}.`);
         }
-        const { testingDate, report } = TestingStep;        
+        const { sampleID,testingDate, warehouse,report } = TestingStep;        
     
         // Check if required data is present
         if (!testingDate || !report) {
@@ -1150,9 +1209,7 @@ class BatchContract {
         const decryptedContent = decrypt(report); // Replace with your decryption logic
         console.log(`Decrypted Content for Batch ${batchNumber}, Package ${packageID}:`, decryptedContent);
     
-        // Step 4: Fraud Detection Logic
-        // Example 1: Check for consistency in batch and package details
-        // Example 1: Extract and verify batch number from the report
+        // Check for consistency in batch and package details
         const batchNumberPattern = /Batch Number:\s*(\d+)/;
         const batchNumberMatch = decryptedContent.match(batchNumberPattern);
         if (!batchNumberMatch || `batch${batchNumberMatch[1]}` !== batchNumber) {
@@ -1160,7 +1217,7 @@ class BatchContract {
         }
 
         // Example 1: Extract and verify packageID from the report
-        const packageIDPattern = /PackageID:\s*(\d+-\d+-\d+)/;
+        const packageIDPattern = /(?:^|\n)PackageID:\s*(\d+-\d+-\d+)/;
         const packageIDMatch = decryptedContent.match(packageIDPattern);
         if (!packageIDMatch || packageIDMatch[1] !== packageID) {
             fraudMessages.push(`Mismatch in packageID: expected ${packageID}, found ${packageIDMatch ? `package${packageIDMatch[1]}` : 'none'}.`);
@@ -1265,7 +1322,52 @@ class BatchContract {
             // If resultMessages is not an array, push it directly
             fraudMessages.push(resultMessages);
         }
-    
+
+        const cctvPattern = /CCTV Monitoring:[\s\S]*?file reference\s*([\w-]+)/;
+        const cctvMatch = decryptedContent.match(cctvPattern);
+        if (!cctvMatch) {
+            fraudMessages.push('CCTV monitoring details not found in the warehousing report.');
+        }
+
+        // Check for Tamper-Seal Verification
+        if (!decryptedContent.includes("Tamper-Seal Verification: Verified intact before testing.")) {
+            fraudMessages.push("Tamper-Seal Verification is missing or not verified as intact in the report.");
+        }
+
+        // Check for warehouse inventory adjustment
+        const collectedPattern = /Collected:.*by (.+?) from warehouse ([A-Z])/;
+        const collectedMatch = decryptedContent.match(collectedPattern);
+        if (collectedMatch) {
+            const collector = collectedMatch[1];
+            const warehouse = collectedMatch[2];
+            console.log(`Collector: ${collector}, Warehouse: ${warehouse}`);
+
+            // Retrieve warehouse data
+            let warehouseDataBytes = await stub.getState(warehouse);
+            if (!warehouseDataBytes || warehouseDataBytes.length === 0) {
+                return shim.error(`Warehouse ${warehouse} data not found. Cannot adjust inventory.`);
+            }
+
+            let warehouseData = JSON.parse(warehouseDataBytes.toString());
+
+            // Check if Sample PackageID matches PackageID
+            const samplePackageIDPattern = /Sample PackageID:\s*(\S+)/;
+            const sampleMatch = decryptedContent.match(samplePackageIDPattern);
+            if (sampleMatch) {
+                const samplePackageID = sampleMatch[1];
+                if (samplePackageID === packageID) {
+                    //warehouseData.inventory -= 1;
+                    console.log(`This packege was removed from Warehouse ${warehouse}: ${warehouseData.inventory}`);
+
+                    // Save updated warehouse data back to the ledger
+                    //await stub.putState(warehouse, Buffer.from(JSON.stringify(warehouseData)));
+                }
+            } else {
+                fraudMessages.push("Sample PackageID not found in the report.");
+            }
+        } else {
+            fraudMessages.push("Collector or warehouse information is missing in the report.");
+        }
         
     
         // If any fraud messages exist, return them, otherwise return success
