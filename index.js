@@ -83,12 +83,13 @@ class BatchContract {
             return await this.detectDistributionFraud(stub, args);
         }else if (func === 'detectServiceCenterFraud') {
             return await this.detectServiceCenterFraud(stub, args);
+        }else if (func === 'Check_Status') {
+            return await this.Check_Status(stub, args);
         } else {
             console.error(`No function named ${func} found`);
             return shim.error(new Error(`No function named ${func} found`));
         }
     }
-    
     async getIPFSFile(cid) {
         try {
             const file = await ipfs.cat(cid);
@@ -1675,9 +1676,86 @@ class BatchContract {
             return shim.success("Service Center checks passed successfully.");
         }
     }
-    
-    
 
+    async Check_Status(stub,args) {
+        const batchNumber = args[0];
+        const packageID = args[1];
+
+        
+        // Retrieve the existing batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found.`);
+        }
+
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+
+        console.log(`Data for batch ${batchNumber} found.`);
+    
+        // Iterate through the steps
+        const steps_1 = batchData.steps || [];
+        for (let stepData of steps_1) {    
+            // Processing Step
+            if (batchData.step === 'Processing') {
+                console.log(`--- Step: Processing ---`);
+                console.log(`Processing Date: ${batchData.processingDateTime}`);
+            }
+    
+            // Quality Control Step
+            if (stepData.step === 'Quality Control') {
+                console.log(`--- Step: Quality Control ---`);
+                console.log(`Quality Control Date: ${stepData.testingDateTime}`);
+            }
+    
+            // Packaging Step
+            if (batchData.Packaging.step === 'Packaging') {
+                console.log(`--- Step: Packaging ---`);
+                console.log(`Packaging Date: ${batchData.Packaging.packagingDateTime}`);
+                console.log(`Container Issues: ${JSON.stringify(batchData.Packaging.containerIssues)}`);
+            }
+            break;
+        }
+
+
+        const packageData = batchData.packages && batchData.packages[packageID];
+        if (!packageData) {
+            throw new Error(`Package ${packageID} not found in batch ${batchNumber}.`);
+        }
+        const steps = packageData.steps || [];
+        for (let stepData of steps) {
+            console.log(`--- Step: ${stepData.step} ---`);
+
+            // Warehousing Step
+            if (stepData.step === 'Warehousing') {
+                console.log(`Warehouse entry Date: ${stepData.entryTime}`);
+                console.log(`Warehouse building: ${stepData.warehouse.building}`)
+            }
+
+            // Testing Step
+            if (stepData.step === 'Testing') {
+                console.log(`Testing Date: ${stepData.testingDate}`);
+                console.log(`warehouse: ${stepData.warehouse}`);
+                console.log(`sampleID: ${stepData.sampleID}`);
+            }
+
+            // Distribution Step
+            if (stepData.step === 'Distribution') {
+                console.log(`Distribution Date: ${stepData.dateAndTime}`);
+                console.log(`warehouse: ${stepData.warehouse}`);
+                console.log(`transportID: ${stepData.transportID}`);
+                console.log(`Destination: ${stepData.destination}`);
+            }
+
+            // Car Service Center Step
+            if (stepData.step === 'Car Service Center') {
+                console.log(`Car Service Center Date: ${stepData.date}`);
+                console.log(`ServiceCenterID: ${stepData.ServiceCenterID}`)
+            }
+        }
+    
+        return shim.success('Check_Status executed successfully.');
+    }
+    
 }    
 // Start the chaincode
 shim.start(new BatchContract());
