@@ -404,6 +404,338 @@ peer chaincode invoke \
 peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"detectServiceCenterFraud","Args":["batch1" , "1-4-040"]}'
 
 
+    
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch1" , "1-4-040"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch1" , "1-1-001"]}'
+
+
+###########################add batch2 data:
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeBatchData","Args":["batch2", "2024-11-14", "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"]}'
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"detectProcessingFraud","Args":["batch2"]}'
+
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeQualityControlData","Args":["batch2","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","2024-11-15"]}'
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"detectQualityControlFraud","Args":["batch2"]}'
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storePackagingData","Args":["batch2", "2024-11-16", "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", "[\"2-1-020\", \"2-1-075\",\"2-4-043\",\"2-20-008\"]"]}'
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"detectPackagingFraud","Args":["batch2"]}'
+
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep2","Args":["batch2" , "2024-11-14T12:30:00Z"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep3","Args":["batch2" , "2024-11-15T13:30:00Z"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep4","Args":["batch2" , "2024-11-16T14:15:00Z"]}'
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeWarehousingData","Args":["batch2","2-1-001" ,"2024-11-17T08:30:00Z","B", "yiZFc1i3ssxi1MWVSbzwuzEP22N0mVtqfvTTFDn9dRkuJmuBxDaJswcLbWyWKqDilXEI9CJi4chVMsjXozTY5B8QNuct9l1URdZYR537cn45QqKtrFpUFYqoCBqoocNtRcmZFmxP67VfU+ntHFfPKt/WBAg8ZxQ4HX/COMG7oJ44GNn/2luFRtBqF0IKuq5sKGZyVS3BKsdRpLW/vliHkoRI97KODdZAJbqGCRtWOzYX2G9OgSeZgpOVCSnptmAvGTd+kEKrXgWSXSg7kUXhspkm1uNXF7xZIujWDZ2G05lE+aakv+AJcMFKga8Z5TaVG0ILKELN4rsEf/pmqUvE8f3qZpu+dGs8T61zdmc0ylzmumw1nMiGeQJIiBm2xLnEpf2cjKeLuNJbBuJdjN/97RBGem8LeB7HoJrAj9bkSUo0nNMCe0BaWX+zU6xryTRY5bfP1DEN0a2BAtxLLcEmwyqJy6EwEjyK0Z3o049npgkBPZtqgQcJGCw9GvuSi+u3wQyeie2CQwpkI/z1K4LgfixYRihS8JmaBcpDyEa4/oi++Z7JYim+u8AdUD+h4UQ5XK/yifZgzSRi8E14nc6rEIXXzDqtw2zVbF9dPz6DgtBAfBN774Dt9Cr7IF5mK2CeAaXf5dkWweOc+SeMh1Xlw5xQvvt0CMf/IWJeGHyQp+E48s0GkB8A0Rg5VqsG+PSnEsadqd4k1SXUnoWc5zgH/b/39eO9hrMB1kPl+U8zF+YJDObrhtYk/X8Cy9ssIJnGMW4MrlqcUF9IQXv9EMfnCqqPsLzaVHpD6oln9PBKSSXJojxB2VngT+E7AL5DN8QOVh/smsmmCQpQlA6D6Ec3/JFrqrDiZO04dFNnP3011Cut7g3zXXIOjHNp6kgC6SGYtKvDJNJB59rzIu72x3Tm3x5SxmZRnnbICVjInrdzYC7l6dpRU8flFNV6RPKJGnI4GKK7YU6peJpEE9ouNqymXnWnyu3UEzNzGMG5Ox2EMrjZTgcWZn480SkAwIsmRR94gejZPMw29bJJ+LF1y57eE+X4dLv5NLVZEJ8Yr5FbSM4K62lJ+taAggDg5XPf4ToY+k2B67hJaQavo1u/K3u/cQxJdBAhp0zPxP2uXO3WU78PLO0n4S9rx8j3MqJQIVdkCBe8mGRFx2L49GpCCKF4XIM7Nq0ytkS56WpZ079gpBvJ+uoGRRxyMGQSwppVEoqrgxDhkUwPHKjLsg6ZaDhcFohkXwHL+0HRwEJ+2DKLO3xLAXFVcpmqsVQbK/8aThRMQFv0K7Duaziv9nfHZz4ZAHYlwr46igZtUF6RTxgPJUhelATRs1Ul4LEnDQXl28zozau0z126INqV9sAti8iE9Q=="]}'
+
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"detectWarehousingFraud","Args":["batch2" , "2-1-001"]}'
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep5","Args":["batch2", "2-1-001" , "2024-11-17T09:00:00Z"]}'
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch2" , "2-1-001"]}'
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeWarehousingData","Args":["batch2","2-1-002" ,"2024-11-17T08:31:00Z","B", "yiZFc1i3ssxi1MWVSbzwu8HmYL0oaylZWXEEOM93r8k5nVbNa4dlzdJA29iQmjcrm5voAwkDnRMdvBEyDFrwWMQzwNY1Y9Letr272c0EzTx8OBWPCmQEueDIjwGbV+x8u/FphB01CDdc2Sudg5nApIvz8P9EOAq2TuSBw0BHZCqA6/OTa8wWxjOL7s5JzGpVxgVwTVg+oEU55+ZVWHFYrVZbwjQKB7MzRqp0YcukevBvcx0wq5kHC15j2IlBS9Uj/qbeUTLgxtBtIRw8/4YKgq9JKtcemFqH3THTUnu8VMZt0kiWzXdHeciHTIiB6Y8pdMlVkUqmCYadbkyORQ7Qe4cPJxUipkeIoxQ1+zCeWtXMOP3vmEysz7B2KAfE4SkR8tFcmDjTSjoWHi9wyaKJrIodUDOr9FPgC41s+PC/FeToZJzCJcpJGu+iZoFGtk0OLHB9/+ePoHyROM/AUDmi3HWeNgGnTpEV90HhLWEIIFeKB1jcm32RoRci0wZj3LF/fWL96p2B1NKvSKvgNw5LenTwYKJjmGY8h2eJkB8g7E2T1aCypGBVfX7tkR9yqcFxiu7saBBMq1i9znZbF50LuCpddiK3g+HdYLRq9d3nc95i+YN8C0KLlVzSnmWcZmm0s6D2NPmk4J9cZiPmpRMeku2CHMCdW3Nwcv6WJDR2Xn7jsj2eXPTnAp3y9zb2rtG99gRUSuyqzd7pkqtxgu63mXp+12Qg7it0gQ+lPgssmvk9esJ6FP/2N6YWIzqPYBYsxaVDB5pvKl/Rzzniu1p55gFZqzc6tDiMiVvXFhCXlEMJ2l83+xZo9HuNMdNahOzGT8VK0XGBmP5t3qDLj2MxLkK3sYurXDUvsCGLxXlh58X0ZLr+Kflt2Ex38MMZc6OSKx2HDBBLwRgv6O9385NUVE60rqnbGdZdOMX8jEMkneJFt2dEMP8JPut28+wsNvDgQqBdU2l4SHKW966s3615nmU3pgOf5mik9bWbdoLbkdQ1dCM4mShghp9Ik634ONtcVhT7qK2ATIlRZI0MojH2O+IanMKCNo4CraBCGQTrlPlG/Z8i+2ntONjd8FlgrOUNfs76pH3yf2j6J5sE3QqZSm9/eo+wSnTt/sxRyaygQsQ35R/bNB6KNRSp0cSE9L4doDnnxdA0NIm3KTwjEiEKDHqmsXpN6Pw+1AJ3/2p1eohjMFKFGbdHHgB54OdYXTIvGLNs+lriawBvv4gMMigVifNSQrQVR8edcw3ma96iTSYQWT7Rn0hYj9rRjNSH2yakpb3CRSap8CLzjJb/A/pa29NYVbdkXexY9PHDsH+W+BlGt/y/mTYqSXCbVb/wfb6wW4dbgiUVRrrQ7Ee69HsvJw=="]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"detectWarehousingFraud","Args":["batch2" , "2-1-002"]}'
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep5","Args":["batch2", "2-1-002" , "2024-11-17T09:01:00Z"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch2" , "2-1-002"]}'
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeWarehousingData","Args":["batch2","2-4-001" ,"2024-11-17T08:32:00Z","B", "yiZFc1i3ssxi1MWVSbzwu9m6Qtq+tmtyXVB+gYbhbUcacbKnJO/Oz1DizJ/253Y1h6OghW/6FjHIwEMpzmqTn1xr5nzBIM7z6J5gBBX5U3JsywG2sOoF/qNxmYGp0rohGD1reIWmkfpFVZSUeB0JbC64ROdfVh4SUet8zZCuIEX+6fwUuveDU2krDTJZn4bDZFLCfjDn4SZ4s3BhXPeN0N0gJJ4hxH+hv0+VPlv4Yo1Kx6F48qTWJOTdnPHztOwQh5cBeyrFEbgoSm7LJIfoXJx+SfdLooJSX1YgDR15yM9AGk0Umhqr6tgnWlbZ8yYlHBMV5ilt+FLSj1TmiVxE1B3s3eRnC/bFfnnI6ulmGNtCxvo5h5b0X8b0McnWGIHiuTyBcSI7fMF3PI6Cz+ERpvBEGZ1m97FAviHRzr5icgSkXHCQPOLTVFngG5u+6X8Qt/dmQZtUPB6DUcchstJNJjHhv1fgrD8N3v6QI6ALbmcGWsHDsPNKTtu+BSCHr5x9Ks4+L5kxeNyAieDpHywDm4iy4qdENSis3Z1ZQdrYLB/VE6LAuiznlj276WUXBVApD9rN8LgPdqa1k3dm5tpTc5DLRZ/k7FrnXMjZWS9kQgBHRrFdwxvUsZkL+uJg0YUj6XHwtJ1LHxzrPdkWfdH0VaVDRMLvp5Zv5oUKC3pI9FqrhIYnUEI6uoIb2GsEeHm60w4AlA2pyLxRDJavAYXqPiQrLzp9jbog6EBSLK0CrMVdErWBw0K7mO8FuKViyu4QSnPQH6wPs8pWTLEbbWzvb74eFjRpHPoaUrWsG3PSPXPNZzS9uRjLnA8r+L+fUXlepRabYLl5VrrnKx94G687j5M95s/ImDRyWoIsxYnJMop5OA4F73rw73NniLzFjC53WlrFGbOzDGbnoDJ5QrQN1sBQSIhozVZZyjzYrfZtZ8VQIj5njy6V3arZ/aIzc0kcjGSLJYCSHUKfaDq52okrEbjY7bQegTMbTfC8gas63vdK6yUzKjOyc0XFYLrs81BQukjGEqmcRu88mc4WlkTv++itfxD/5u+V1A71uSmO/y4rGxisy0TXbbf9vzViKIVb8o2kexE0C2Kj1ZB04GDN8RxmW0EbmxsZLGjIllGLArvW01Czbxvg8YhlAcTYpk7hx9afHUWUGGuWqz02r+G5n27IIhIib4Z4BwUMsbRX6UVZCj0LW7oJsOBmtcWdiF0KS5w7s2k9R4/zQGknGAe91AGYm6iSroqyR3r3guLpSi/vWrHT97cVY6+DgSN24E+me73ZDQMegYyTDrtIvr2zFNy272sgJ3LazBs1BfmTtgGepOjPX2JYHXzmVtJQvOHZcssWuyhCgYgl3clUw2t/Dg=="]}'
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep5","Args":["batch2", "2-4-001" , "2024-11-17T09:02:00Z"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch2" , "2-4-001"]}'
+
+
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeTestingData","Args":["batch2","2-1-001","2-1-001" ,"2024-11-18", "B","BDpsaU3lBIXJ9ifz0ti9u3Xs2icilkgGOZ8T8YPzHB7C66PFhDPySRuEpuSf6j2lx7Z8njN3LINx3DAJxKnH5F3eqJuI1KoUdOHykV/LJpwKDLvGzui8HuEJAwxl0hZZC0iWcIZt2U62PmAc9ti4agVFcD6SsAQ/Odh1yM8HG/TgrTisDP1gmdE/5M6y4wwLWgXAnue1vddtqNXm7kHprHS9GyzBhjw0n+nuk5r/1zn7eb8/vS+5r4HdFaCLHkqooxeHwtFYq63XJvIGtMkt5JurXbEM+dgqeOAnJ89kUMEV1ymZ4L6XiO1vA+FhvdQ+MjIc+NwMXIh55Q+q7E3N50cBb/Z04pHBHtDM278yVibegODLGQQJaZbedDkdMolVgggY8KIB9LnDRg9e9MHUFcI21FAoX2yKiORvfCIoMwd8KYMzHN8wbPstM7S46sGC7ku3JP2RnKhmCnKzBruV2b1bOeyBucvMtzy6nkMXtqu4DNM9n9cso7gIR6ynw1q553YSOunN8TOCqAwFlWfbHayMc1XlskXCbXAWpxrUwU7gV1xEi7O7v25HS1IW6Krd8cxTngPB8y1fc1a1NPkBCmS2WdCkAloPirHu38S5tXIGN2MiNn/p/ID/hLVP7lON1ah2yZJnc+7XQtVavgPm8PRQfFs2xWNEgDFSt7EEs0mOPssMJQlxmlPQsXBOooLK+AzsGjm1jjecs6ga1gt1CBo2KCxxuyeIGuN9o98j9VHpjg2SLwV98v/cP5fz9xGXxqHkwvctjC9KYgHjrWgEJ1ov2jHNHsEdcqd1b5DUyRIhZ4UDAsDi55q5wLLgla04XJZAj0EDQKIFG7eDEti+FeJaAeWuO9sPr/b9Gt/+ZBK9Ku/DrgTMDP9Dj6npWnJKOgMuTlAMp1e40pwOtFY8R7piXuQ4XluIpYyJmPEHulD0X2HlwM5FEG5vTfGAhDGGPzbQitr8i5lzKtMgGoquhLJCOuNLcC9mH0y5CrpauQvMLCyOP3BbQW4qDLsdP+fKCGvI8MK5chHvKxAe8xpP7GIvmum2TIBj8BV+v+ODae2d8uEFtFq5016tgxMFpVEA8f4bj1StuC9Qsy9aNw3KNcObQlJMgpLScgzRgwKBbjFIeHiVZCOWHi3bqlaMQbpRVKqA1Qe/0eAPZ5D6IgLV2N6xr8UQaAYl6huT3nhT5D4ojz+1BGnK4otIWYuJX55pxXd5+PwWEAyhL69x6qoSk/KmjQ7OuDBGivvIoISwc63483xf7X3eNBH4H60QVX3NcQu1zcW12yY7QU5Pp17d/W7M1gqbMWomI5AEKwoC4fzliT9BYWK8FADZwewsdmRPQmOGA+Vq30wzrEgXdmeetPvYXkv6Kz+Aw9qZx6UOGMAh9lTJZyrFGmGKemCE+RGN30R2fJb3/NNF0OaXBLdyF4DFG2fkvd3ny222wmp+PalvOjWq16jCWW2wcAPXf2TDxtUnbSeWFGhswKiAYXxkWr05cABC2Rmc6mmCUvHwC41hDAe5ei1BS0rIHYgrL7joo9ladehyoXGrUz1HUPvUbapVRRrAzQcA9bVm/qrbSiOWVBR1HlJAuqjhwI9P0QHwTH8m93zTfmnGhwaZbV206UP5prJEitsjt+yBfyxhfkHM60tftC8R5hOsyecDaR0gCQAMBeDN5QSzcWiFAL3hvucQAw6TGq35phwVP7c9JfOWMJaaj6c6wn1NcAriPw1njeOmAW7/Lkl876A+XE40OptKrjRAOLxpY4VQ/hMh+gnMSn2ACzX9EWuAXeFUxzrDME+WN0Yv33Ot6VGN9Ad0bwUBZjdPfScfS06R+eTOl6i3kHGGWNnwmzkU2d91chc5FEHdXoyaDu693nh9Tw/tCsjUBeztNS2RglbJpmj5sXGU3hFwd5/WTn3eMxL3WQMDsuVQ/YVavtgUgZN0ntQGaQBT7U1vMGyEFnX4vJh+PDyToOPc7529Blqs5iJZBIm/rC1XzU/Vc6zJYLNt6DDXaMfYz/dL56K7Gb22PxSWb4oYKxazAJ8dk28oncEf1mHOwA2+QVelU9mKSMny8rL4bksKkDnVAHHjgNAsbqNvhdN16AF98fYhc/8IxXIMZfHlY4UTTa5+aneF8Xi21D0nUPqPQ1uzeXaMygcJL4wcWx/EmUHnDKkaM6gfzzaJnWKe4INhI6M2+16bxt8yMPwXFD8RQBlba7FXYpyB/HIvaZBpyGetnjS0Xis6AC4ft7owdnlkAXb3V24p+eIvNk6OJthIY0EjUwKJMeSmkdnBd+kXU4KaOySRjC563HpS4pR0QYTwgu1YXqGk+2V3iJZlPLElH2tqAbI397v4jNAilN5eDgxo8kDE3cCOToaD3luM0BZkuu6SOQhusxuzp7aqp3YjIC4yQ/fBUP2N/2nZel28Gmqrm/x2lRdUc1lVhAXUehmFMRRpz5DW17nUTLKILfIKs76z83Jkc3fs03/+D88bBd4CHCqlJramgb64D1rZmoHlO7+GPrcDQPB1cjM5FArZg7ZL62y01yTX0UBqWUDkSPMuvN7+KpT96kvGs+wB7ux7Vmcz3s9s/jinHYnMwQ=="]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep6","Args":["batch2", "2-1-001" , "2024-11-18T14:00:00Z"]}'
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch2" , "2-1-001"]}'
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeWarehousingData","Args":["batch2","2-4-002" ,"2024-11-17T08:38:00Z","B", "yiZFc1i3ssxi1MWVSbzwu7IoNhmKvyJ61Dif7/af5vWe5g4sF4RIqTOFPVPRLgPMLLl7K687XbwbpV/gQDLMhW4cQeQ/jPFuZMagYtfKMX7NTOCoz+1Gv/N8kKnj2zWVHKVuz8bI86qS6G7ie/wTLYrUmbZbYt3fyawqsTkQjteBmA+VIXb8zBjbaS6KgHsudVidkLxBgn2xMYfJBiiNYTlcgCVpzLKiBm1whymsmlfTt5VE32RAvYIK2Qm05ml4D/d2gDjT5yrWzXCkgnDieiB3Pa8S39Z1458Zefg4C8luLrFKx2aOC5IBLTl22MffcFnvmlzLqR14YmpCebgf5ZPwfTFEW61bOI/EY00pypXegxZfBOB+7Zs61u1Kb9octspKRGNkYf6+GGFApSiGoLpoF1R9v4oIA3BssW7yo+Z5TTjEjJ1dYbcJnMJ6/Fm8qZBueP6xGue/BgGScDjV6VH2UucoN/bacYboFUJcqMXnBSbSLr9pjFz0soKYQKUqFLX21Fm75bveZWFjqYVcf7O+1/q7a0BrSJ383yGlz5unaus0/vPaleYlbVWO/k8Dv6NLvWKBRDk4khdqBvg51q1uu1YUpJTN/TATCFBSMAcg9dh1osL+HfCazIAq3ff7v4VLqL6TwY51n5wP2p6yeFKnQBdKuK5ymMyoNAEsWgBRUMyivK5lKNL78r6yP/3PtnsA1nlhopxSu/pTdzhG4UV5zwrY8dUEOC57JCjbHEibmg2XBkDR/CYmOB80tUM3FcVsQ7an33ywTF2S4AUI5zbjODsNuOyG8bKxoMrtPYgcyXFPPprl/NWw6XJ8uC+V1a2LFAD9mgMqY5pbxefpofFy71gvib0ayXoH+1YTcqZ064Y/mRNwryOedfqhyWl6aIiPj9ar5juMWF0sWTtyOIbnfbRd1TNHVlfHZ6u3+sM85qqgecRbMxHV5RoD2+/F9eT8KMszAicUYGgWqiW0+4CG0l3Zsi5DQ2Auj+Jw2CD6Q1dkIvNm66q9i1J6rwg/a0bHkhinpBIku48o8fVE9SIEFZQNe6E2s1YQYHf/150950gUTBMeDHarD/LSMKGzGLdDHLwMxWOdo3rmxoXB1YMW/x0nNgNccnY/QdvyiSjTfDctQ4FUv/Y4Q19SinLBjYjoPPvCJBhxYzKYBSWxnfBfszZHcaXbe5DuTGJRBryt49IGzmZcrswHEcqVkyHMpqdYNBoKa4UKjA3fFAHpPjIk/c4LNY1/i+Yx+PEvMdBNOO/PjyPkKlqmBHXzPA5tUrRxsm3ltnnmhS5BL17HptoNfTd4YlZujHp1z8j4rFWp6vTtGv5ZQY07SbkQFq2DmpeLrHMH66YKmDwxjN00aQ=="]}'
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep5","Args":["batch2", "2-4-002" , "2024-11-17T09:02:00Z"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch2" , "2-4-002"]}'
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeWarehousingData","Args":["batch2","2-4-003" ,"2024-11-17T08:39:00Z","B", "yiZFc1i3ssxi1MWVSbzwuw4ki3e6IlLEIXrlZ0lzaw8aYxJLSABaQHxNP11VJiLOdZDw801Ktk4QpMuh1vIVepESQqLHqxudTCfsmjl4BTMRSv+DL6KX2qgqJj+yCgNdabobrstXwW4guaEpWPqSz8XFjO5bhCFW0CY5/wOXD80zfKzcuB0+GEx4ZNG/cjLJFf32iHXJeT3c4KIcSxpUuN9edURpXqMbcgcy1jipI2uge5hAhI9eFD9WFvQgCYQE7heou5enzGh3VQDAG+1uqaFzDkLVK8CEa5XGU8tt6lg0q/UnBpaa1efRemsj63ighbU5gJfDoz06bo6IpM/2trxRx312KF5O4pgj854NZiWJ4GGF/8ZDt4rAGPSajHmVkG65Xh9VjDNhQjtejA0gT9BjQ0K37qDXhOdSSUIWkiyFHfOXbm286kJxAMWyPhF8ApllWhuZgm8MBidOjlcD4v8a3XPS6F93PsXF75t/7NxPLFV0bWikQyTQf4yKOhHKHCO7Msk28uWA45pf7CDldaJdoI9FMpH/axdvmCr9zDPXLGvOvBz2OhOeodK05hB7OLlLrzIRLpaktRq/To3Loqh5p+TjfcIejZ/pUy/eIIGtm8pTHa4rWjXVcHwMabMO4L0CtV7jQCucpC0lPi6mqL5arHM2+Rmt+2mx9Hy6Gd1rSFHM9a2PUep4cTkT02CXVN5wlaf45qymZhHbM3FOghdFNsEzORTkh9XB4WjD1wpHwLA6DcZO52Z6pRJIYyzUbslP7Wtvtzy8DgWZXTBYU1J38ud+36fYPaZVd2jboHjjyGjZkzQeTeqzjNvTl+fY3yNVG/8slLyiJK77qrXQi+MmEWgVxySItiAUprz9I/rfijDQbAhaGAj23w1f5nCxKrDI6EQoG0Q+Oh1PTZlz/bzilkiaqFUvS3HuqQR7GwQAcoN4jPJWn+H9DOqxYDP5SJ1lYU1yMd7P0mJXZu3FTOPYtrduYcu39jlKWAPnAwmYEfMy9/xGf0Jg2+riOpR82RwpUttJrm8okRndI+j5GXfDfmzPmLtEZRNiiBnPOyA20XFsZS0x0RECT66gkmjjtQiU6BavDJteUCYamgaJV10LzRjzs9uH0EiWCS6XQ67E+fHqXrUfVxlAbzJBdiLdGqYkTWS9j4WBvzugEzTSLpPoMFQE/qtx/pFHh/B3D21xzigjUvPVf7olHHr+TlroEECm0AjSk7in6qDQMUaxq316+3PG2N/Np/BcO1NJE4QJACEwxEBvk6hi6RjYX+SYqWTqLDOQxsSwfekfeoJDUprhEC9gd81cXfk363TNYxWZlMJWnVwmVg5yp3/wgK+A+yA4RIiaJfqlbYnxe+WQ7A=="]}'
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep5","Args":["batch2", "2-4-003" , "2024-11-17T09:02:00Z"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch2" , "2-4-003"]}'
+
+
+
+
+
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeTestingData","Args":["batch2","2-4-001","2-4-001" ,"2024-11-18", "B","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"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep6","Args":["batch2", "2-4-001" , "2024-11-18T14:00:00Z"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch2" , "2-4-001"]}'
+
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeTestingData","Args":["batch2","2-4-002","2-4-001" ,"2024-11-18", "B","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"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep6","Args":["batch2", "2-4-002" , "2024-11-18T14:00:00Z"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch2" , "2-4-002"]}'
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeTestingData","Args":["batch2","2-4-003","2-4-001" ,"2024-11-18", "B","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"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep6","Args":["batch2", "2-4-003" , "2024-11-18T14:00:00Z"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch2" , "2-4-003"]}'
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeDistributionData","Args":["batch2","2-4-002","B","Truck-09","CS7" ,"2024-11-21","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"]}'
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep7","Args":["batch2", "2-4-002" , "2024-11-21T16:00:00Z"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch2" , "2-4-002"]}'
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeDistributionData","Args":["batch2","2-4-003","B","Truck-09","CS7" ,"2024-11-21","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"]}'
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"checkWaitStep7","Args":["batch2", "2-4-003" , "2024-11-21T16:00:00Z"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch2" , "2-4-003"]}'
+
+
+
+
+
+peer chaincode invoke \
+  -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C mychannel \
+  -n batch \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"storeServiceCenterData","Args":["batch2","2-4-002","CS7" ,"2024-11-23","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"]}'
+
+
+
+
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"check_Final","Args":["batch2", "2-4-002" , "2024-11-23T13:00:00Z"]}'
+
+peer chaincode invoke   -o localhost:7050   --ordererTLSHostnameOverride orderer.example.com   --tls   --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"   -C mychannel   -n batch   --peerAddresses localhost:7051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"   --peerAddresses localhost:9051   --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"   -c '{"function":"Check_Status","Args":["batch2" , "2-4-002"]}'
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -83,6 +83,20 @@ class BatchContract {
             return await this.detectDistributionFraud(stub, args);
         }else if (func === 'detectServiceCenterFraud') {
             return await this.detectServiceCenterFraud(stub, args);
+        }else if (func === 'checkWaitStep2') {
+            return await this.checkWaitStep2(stub, args);
+        }else if (func === 'checkWaitStep3') {
+            return await this.checkWaitStep3(stub, args);
+        }else if (func === 'checkWaitStep4') {
+            return await this.checkWaitStep4(stub, args);
+        }else if (func === 'checkWaitStep5') {
+            return await this.checkWaitStep5(stub, args);
+        }else if (func === 'checkWaitStep6') {
+            return await this.checkWaitStep6(stub, args);
+        }else if (func === 'checkWaitStep7') {
+            return await this.checkWaitStep7(stub, args);
+        }else if (func === 'check_Final') {
+            return await this.check_Final(stub, args);
         }else if (func === 'Check_Status') {
             return await this.Check_Status(stub, args);
         } else {
@@ -90,6 +104,8 @@ class BatchContract {
             return shim.error(new Error(`No function named ${func} found`));
         }
     }
+
+    
     async getIPFSFile(cid) {
         try {
             const file = await ipfs.cat(cid);
@@ -116,10 +132,14 @@ class BatchContract {
 
         const batchData = {
             batchNumber,
+            steps: [],
+        };
+
+        batchData.steps.push({
             processingDateTime,
             report,
             step: 'Processing'
-        };
+        });
 
         await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
         console.log('Batch Data Stored:', batchData);
@@ -178,30 +198,27 @@ class BatchContract {
         const containerIssues = JSON.parse(args[3]); // Expecting a JSON array of container issues like underfilling or sealing issues
 
         // Fetch existing batch data
-        let existingDataBytes = await stub.getState(batchNumber);
-        let existingData = {};
+        let batchDataBytes = await stub.getState(batchNumber);
+        let batchData = {};
 
-        if (existingDataBytes && existingDataBytes.length > 0) {
+        if (batchDataBytes && batchDataBytes.length > 0) {
             // Parse existing data if it exists
-            existingData = JSON.parse(existingDataBytes.toString());
+            batchData = JSON.parse(batchDataBytes.toString());
         }
 
-        // Add/Update Packaging Step Data
-        const packagingData = {
+        // Append Packaging step data
+        batchData.steps.push({
             packagingDateTime,
             report,
             containerIssues,
             step: 'Packaging'
-        };
-
-        // Merge the data while retaining earlier steps
-        existingData['Packaging'] = packagingData;
+        });
 
         // Save the merged data back to the blockchain
-        await stub.putState(batchNumber, Buffer.from(JSON.stringify(existingData)));
+        await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
 
-        console.log('Packaging Data Stored:', packagingData);
-        return shim.success(Buffer.from(JSON.stringify(existingData)));
+        console.log('Packaging Data Stored:', batchData);
+        return shim.success(Buffer.from(JSON.stringify(batchData)));
     }
 
 
@@ -504,28 +521,45 @@ class BatchContract {
         let batchData = JSON.parse(batchDataAsBytes.toString());
 
         // Ensure the processing step exists
-        if (batchData.step !== 'Processing') {
+        // if (batchData.step !== 'Processing') {
+        //     return shim.error(`Processing data not found for batch ${batchNumber}.`);
+        // }
+
+        // console.log(`Verifying Processing Step Data for Batch: ${batchNumber}`);
+
+        // // Check report validity (example: verify hash pattern)
+        // if (!batchData.report) {
+        //     return shim.error(`NO report detected for batch ${batchNumber}. Possible fraud.`);
+        // }
+
+        // Ensure the processing step exists
+        let processingStep = batchData.steps.find(step => step.step === 'Processing');
+        if (!processingStep) {
             return shim.error(`Processing data not found for batch ${batchNumber}.`);
         }
-
+    
         console.log(`Verifying Processing Step Data for Batch: ${batchNumber}`);
+    
+        // Fetch Quality Control-specific details
+        const { processingDateTime, report } = processingStep;
 
-        // Check report validity (example: verify hash pattern)
-        if (!batchData.report) {
-            return shim.error(`NO report detected for batch ${batchNumber}. Possible fraud.`);
+    
+        // Check if required data is present
+        if ( !report || !processingDateTime) {
+            return shim.error(`Missing critical Processing data for batch ${batchNumber}. Possible fraud.`);
         }
 
         // Check if the processing timestamp is reasonable (e.g., no future date)
         const currentDate = new Date();
-        const processingDate = new Date(batchData.processingDateTime);
+        const processingDate = new Date(processingDateTime);
         if (processingDate > currentDate) {
             return shim.error(`Processing date is in the future for batch ${batchNumber}. Fraud detected.`);
         }
 
-        console.log(`Fetching data from report: ${batchData.report}`);
+        console.log(`Fetching data from report: ${report}`);
 
         // Step 3: Retrieve data from report
-        const encryptedData = batchData.report; 
+        const encryptedData = report; 
         const decryptedContent = decrypt(encryptedData); 
         console.log(`Decrypted Content for Batch ${batchNumber}:`, decryptedContent);
 
@@ -723,21 +757,22 @@ class BatchContract {
     
         // Validate testing date
         const testingDate = new Date(testingDateTime);
-    
         // Ensure the Processing step exists
-        if (batchData.step === 'Processing') {
-            const processingDate = new Date(batchData.processingDateTime);
-            if (testingDate < processingDate) {
-                return shim.error(`Testing date is before processing date for batch ${batchNumber}. Fraud detected.`);
-            }
-        
-            if (testingDate > new Date()) {
-                return shim.error(`Testing date is in the future for batch ${batchNumber}. Fraud detected.`);
-            }
-        }
-        else{
+        let processingStep = batchData.steps.find(step => step.step === 'Processing');
+        if (!processingStep) {
             return shim.error(`Processing step data not found for batch ${batchNumber}. Cannot validate testing date.`);
-        }    
+        }
+        const processingDate=new Date(processingStep.processingDateTime);
+    
+
+        if (testingDate < processingDate) {
+            return shim.error(`Testing date is before processing date for batch ${batchNumber}. Fraud detected.`);
+        }
+    
+        if (testingDate > new Date()) {
+            return shim.error(`Testing date is in the future for batch ${batchNumber}. Fraud detected.`);
+        }
+ 
 
     
         // Decrypt the Quality Control report
@@ -892,7 +927,7 @@ class BatchContract {
         let batchData = JSON.parse(batchDataAsBytes.toString());
         
         // Ensure the Packaging step exists
-        let packagingStep = batchData.Packaging;
+        let packagingStep = batchData.steps.find(step => step.step === 'Packaging');;
         if (!packagingStep) {
             return shim.error(`Packaging data not found for batch ${batchNumber}.`);
         }
@@ -913,28 +948,21 @@ class BatchContract {
         const packagingDate = new Date(packagingDateTime);
         const currentDate = new Date();
     
-        // Ensure the Processing step exists
-        if (batchData.step === 'Processing') {
-            const processingDate = new Date(batchData.processingDateTime);
-            if (packagingDate < processingDate) {
-                return shim.error(`Packaging date is before processing date for batch ${batchNumber}. Fraud detected.`);
-            }
-            let qcStep = batchData.steps.find(step => step.step === 'Quality Control');
-            if (!qcStep) {
-                return shim.error(`Quality Control data not found for batch ${batchNumber}.`);
-            }
-            // Fetch Quality Control-specific details
-            const {  reportqc, testingDateTimeqc } = qcStep;
-            if(packagingDate <testingDateTimeqc){
-                return shim.error(`Packaging date is before quality control date for batch ${batchNumber}. Fraud detected.`);
-            }
-    
-            if (packagingDate > currentDate) {
-                return shim.error(`Packaging date is in the future for batch ${batchNumber}. Fraud detected.`);
-            }
-        } else {
-            return shim.error(`Processing step data not found for batch ${batchNumber}. Cannot validate packaging date.`);
+
+        let qcStep = batchData.steps.find(step => step.step === 'Quality Control');
+        if (!qcStep) {
+            return shim.error(`Quality Control data not found for batch ${batchNumber}.`);
         }
+        // Fetch Quality Control-specific details
+        const testingDateTimeqc=qcStep.testingDateTime;
+        if(packagingDate <testingDateTimeqc){
+            return shim.error(`Packaging date is before quality control date for batch ${batchNumber}. Fraud detected.`);
+        }
+
+        if (packagingDate > currentDate) {
+            return shim.error(`Packaging date is in the future for batch ${batchNumber}. Fraud detected.`);
+        }
+        
     
         // Decrypt the Packaging report
         const decryptedContent = decrypt(report); // Replace with your decryption logic
@@ -1067,8 +1095,10 @@ class BatchContract {
         const currentDate = new Date();
     
         // Ensure the previous step (Packaging) exists and validate timing
-        if (batchData.Packaging) {
-            const packagingDate = new Date(batchData.Packaging.packagingDateTime);
+        let pkStep = batchData.steps.find(step => step.step === 'Packaging');
+
+        if (pkStep) {
+            const packagingDate = new Date(pkStep.packagingDateTime);
             if (warehousingDate < packagingDate) {
                 return shim.error(`Warehousing entry time is before packaging date for batch ${batchNumber}, package ${packageID}. Fraud detected.`);
             }
@@ -1677,6 +1707,345 @@ class BatchContract {
         }
     }
 
+    async checkWaitStep2(stub, args) {
+        if (args.length !== 2) {
+            return shim.error('Incorrect number of arguments. Expecting 2: batchNumber, waitDate');
+        }
+    
+        const batchNumber = args[0];
+        const waitDate = args[1];
+    
+        // Retrieve the batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found. Ensure processing stage data exists.`);
+        }
+    
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+    
+        // Check for fraud in the processing step
+        const fraudDetectionResult = await this.detectProcessingFraud(stub, batchNumber);
+    
+        // If fraud is detected, return the error
+        if (fraudDetectionResult.status !== shim.success().status) {
+            return shim.error(`Cannot proceed to quality control. ${fraudDetectionResult.message}`);
+        }else{
+            console.log("No fraud detected in processing.");
+        }
+    
+        // If no fraud, add the "wait for quality control" step
+        batchData.steps.push({
+            waitDate,
+            step: 'Wait for Quality Control'
+        });
+    
+        // Update the batch data on the ledger
+        await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
+        console.log(`Wait step added for batch ${batchNumber}:`, batchData);
+        return shim.success(Buffer.from(JSON.stringify(batchData)));
+    }
+    async checkWaitStep3(stub, args) {
+        if (args.length !== 2) {
+            return shim.error('Incorrect number of arguments. Expecting 2: batchNumber, waitDate');
+        }
+    
+        const batchNumber = args[0];
+        const waitDate = args[1];
+    
+        // Retrieve the batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found. Ensure processing stage data exists.`);
+        }
+    
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+
+        let qcStep = batchData.steps.find(step => step.step === 'Quality Control');
+        if (!qcStep) {
+            return shim.error(`Quality Control data not found for batch ${batchNumber}.`);
+        }
+    
+        // Check for fraud in the processing step
+        const fraudDetectionResult = await this.detectQualityControlFraud(stub, batchNumber);
+    
+        // If fraud is detected, return the error
+        if (fraudDetectionResult.status !== shim.success().status) {
+            return shim.error(`Cannot proceed to packaging. ${fraudDetectionResult.message}`);
+        } else{
+            console.log("Quality control checks passed successfully.");
+        }
+    
+        // If no fraud, add the "wait for quality control" step
+        batchData.steps.push({
+            waitDate,
+            step: 'Wait for Packaging'
+        });
+    
+        // Update the batch data on the ledger
+        await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
+        console.log(`Wait step added for batch ${batchNumber}:`, batchData);
+        return shim.success(Buffer.from(JSON.stringify(batchData)));
+    }
+
+    async checkWaitStep4(stub, args) {
+        if (args.length !== 2) {
+            return shim.error('Incorrect number of arguments. Expecting 2: batchNumber, waitDate');
+        }
+    
+        const batchNumber = args[0];
+        const waitDate = args[1];
+    
+        // Retrieve the batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found. Ensure processing stage data exists.`);
+        }
+    
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+
+        let PackagingStep = batchData.steps.find(step => step.step === 'Packaging');
+        if (!PackagingStep) {
+            return shim.error(`Packaging data not found for batch ${batchNumber}.`);
+        }
+    
+        // Check for fraud in the processing step
+        const fraudDetectionResult = await this.detectPackagingFraud(stub, batchNumber);
+    
+        // If fraud is detected, return the error
+        if (fraudDetectionResult.status !== shim.success().status) {
+            return shim.error(`Cannot proceed to warehousing. ${fraudDetectionResult.message}`);
+        } else{
+            console.log("Packaging checks passed successfully.");
+        }
+    
+        // If no fraud, add the "wait for quality control" step
+        batchData.steps.push({
+            waitDate,
+            step: 'Wait for Warehousing'
+        });
+    
+        // Update the batch data on the ledger
+        await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
+        console.log(`Wait step added for batch ${batchNumber}:`, batchData);
+        return shim.success(Buffer.from(JSON.stringify(batchData)));
+    }
+
+    async checkWaitStep5(stub, args ) {
+        if (args.length !== 3) {
+            return shim.error('Incorrect number of arguments. Expecting 3: batchNumber,packageID, waitDate');
+        }
+        const batchNumber = args[0];
+        const packageID=args[1];
+        const waitDate = args[2];
+    
+        console.log(`batchNumber: ${batchNumber}, packageID: ${packageID}, waitDate: ${waitDate}`);
+
+    
+        // Retrieve the batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found.`);
+        }
+    
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+
+        // Ensure the Warehousing step exists for the specified package
+        let packageData = batchData.packages && batchData.packages[packageID];
+        if (!packageData) {
+            return shim.error(`Package ${packageID} not found in batch ${batchNumber}.`);
+        }
+
+        let WarehousingStep = packageData.steps.find(step => step.step === 'Warehousing');
+        if (!WarehousingStep) {
+            return shim.error(`Warehousing data not found for batch ${batchNumber}.`);
+        }
+    
+        // Check for fraud in the processing step
+        const fraudDetectionResult = await this.detectWarehousingFraud(stub, [batchNumber, packageID]);
+    
+        // If fraud is detected, return the error
+        if (fraudDetectionResult.status !== shim.success().status) {
+            return shim.error(`Cannot proceed to Testing. ${fraudDetectionResult.message}`);
+        } else{
+            console.log("Warehousing checks passed successfully.");
+        }
+    
+        // If no fraud, add the "wait for quality control" step
+
+        batchData.packages[packageID].steps.push({
+            waitDate,
+            step: 'Wait for Testing'
+        });
+    
+        // Update the batch data on the ledger
+        await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
+        console.log(`Wait step added for batch ${batchNumber}:`, batchData);
+        return shim.success(Buffer.from(JSON.stringify(batchData)));
+    }
+
+    async checkWaitStep6(stub, args ) {
+        if (args.length !== 3) {
+            return shim.error('Incorrect number of arguments. Expecting 3: batchNumber,packageID, waitDate');
+        }
+        const batchNumber = args[0];
+        const packageID=args[1];
+        const waitDate = args[2];
+    
+        console.log(`batchNumber: ${batchNumber}, packageID: ${packageID}, waitDate: ${waitDate}`);
+
+    
+        // Retrieve the batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found.`);
+        }
+    
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+
+        // Ensure the Warehousing step exists for the specified package
+        let packageData = batchData.packages && batchData.packages[packageID];
+        if (!packageData) {
+            return shim.error(`Package ${packageID} not found in batch ${batchNumber}.`);
+        }
+
+        let TestingStep = packageData.steps.find(step => step.step === 'Testing');
+        if (!TestingStep) {
+            return shim.error(`Testing data not found for batch ${batchNumber}.`);
+        }
+    
+        // Check for fraud in the processing step
+        const fraudDetectionResult = await this.detectTestingFraud(stub, [batchNumber, packageID]);
+    
+        // If fraud is detected, return the error
+        if (fraudDetectionResult.status !== shim.success().status) {
+            return shim.error(`Cannot proceed to Distribution. ${fraudDetectionResult.message}`);
+        } else{
+            console.log("Testing checks passed successfully.");
+        }
+    
+        // If no fraud, add the "wait for quality control" step
+
+        batchData.packages[packageID].steps.push({
+            waitDate,
+            step: 'Wait for Distribution'
+        });
+    
+        // Update the batch data on the ledger
+        await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
+        console.log(`Wait step added for batch ${batchNumber}:`, batchData);
+        return shim.success(Buffer.from(JSON.stringify(batchData)));
+    }
+
+    async checkWaitStep7(stub, args ) {
+        if (args.length !== 3) {
+            return shim.error('Incorrect number of arguments. Expecting 3: batchNumber,packageID, waitDate');
+        }
+        const batchNumber = args[0];
+        const packageID=args[1];
+        const waitDate = args[2];
+    
+        console.log(`batchNumber: ${batchNumber}, packageID: ${packageID}, waitDate: ${waitDate}`);
+
+    
+        // Retrieve the batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found.`);
+        }
+    
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+
+        // Ensure the Warehousing step exists for the specified package
+        let packageData = batchData.packages && batchData.packages[packageID];
+        if (!packageData) {
+            return shim.error(`Package ${packageID} not found in batch ${batchNumber}.`);
+        }
+
+        let DistributionStep = packageData.steps.find(step => step.step === 'Distribution');
+        if (!DistributionStep) {
+            return shim.error(`Distribution data not found for batch ${batchNumber}.`);
+        }
+    
+        // Check for fraud in the processing step
+        const fraudDetectionResult = await this.detectDistributionFraud(stub, [batchNumber, packageID]);
+    
+        // If fraud is detected, return the error
+        if (fraudDetectionResult.status !== shim.success().status) {
+            return shim.error(`Cannot proceed to Car Service Center. ${fraudDetectionResult.message}`);
+        } else{
+            console.log("Distribution checks passed successfully.");
+        }
+    
+        // If no fraud, add the "wait for quality control" step
+
+        batchData.packages[packageID].steps.push({
+            waitDate,
+            step: 'Wait for Car Service Center'
+        });
+    
+        // Update the batch data on the ledger
+        await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
+        console.log(`Wait step added for batch ${batchNumber}:`, batchData);
+        return shim.success(Buffer.from(JSON.stringify(batchData)));
+    }
+
+    async check_Final(stub, args ) {
+        if (args.length !== 3) {
+            return shim.error('Incorrect number of arguments. Expecting 3: batchNumber,packageID, waitDate');
+        }
+        const batchNumber = args[0];
+        const packageID=args[1];
+        const waitDate = args[2];
+    
+        console.log(`batchNumber: ${batchNumber}, packageID: ${packageID}, waitDate: ${waitDate}`);
+
+    
+        // Retrieve the batch data
+        let batchDataAsBytes = await stub.getState(batchNumber);
+        if (!batchDataAsBytes || batchDataAsBytes.length === 0) {
+            return shim.error(`Batch ${batchNumber} not found.`);
+        }
+    
+        let batchData = JSON.parse(batchDataAsBytes.toString());
+
+        // Ensure the Warehousing step exists for the specified package
+        let packageData = batchData.packages && batchData.packages[packageID];
+        if (!packageData) {
+            return shim.error(`Package ${packageID} not found in batch ${batchNumber}.`);
+        }
+
+        let DistributionStep = packageData.steps.find(step => step.step === 'Car Service Center');
+        if (!DistributionStep) {
+            return shim.error(`Car Service Center data not found for batch ${batchNumber}.`);
+        }
+    
+        // Check for fraud in the processing step
+        const fraudDetectionResult = await this.detectServiceCenterFraud(stub, [batchNumber, packageID]);
+    
+        // If fraud is detected, return the error
+        if (fraudDetectionResult.status !== shim.success().status) {
+            return shim.error(`Fraud detected: . ${fraudDetectionResult.message}`);
+        } else{
+            console.log("Distribution checks passed successfully.");
+        }
+    
+        // If no fraud, add the "wait for quality control" step
+
+        batchData.packages[packageID].steps.push({
+            waitDate,
+            step: 'The product was successfully used'
+        });
+    
+        // Update the batch data on the ledger
+        await stub.putState(batchNumber, Buffer.from(JSON.stringify(batchData)));
+        console.log(`Wait step added for batch ${batchNumber}:`, batchData);
+        return shim.success(Buffer.from(JSON.stringify(batchData)));
+    }
+    
+
+
+
+
     async Check_Status(stub,args) {
         const batchNumber = args[0];
         const packageID = args[1];
@@ -1694,28 +2063,41 @@ class BatchContract {
     
         // Iterate through the steps
         const steps_1 = batchData.steps || [];
-        for (let stepData of steps_1) {    
+        for (let stepData of steps_1) {  
+            console.log(`--- Step: ${stepData.step} ---`);
+  
             // Processing Step
-            if (batchData.step === 'Processing') {
-                console.log(`--- Step: Processing ---`);
-                console.log(`Processing Date: ${batchData.processingDateTime}`);
+            if (stepData.step === 'Processing') {
+                console.log(`Processing Date: ${stepData.processingDateTime}`);
             }
-    
+
+            //waiting step-> check for frauds
+            if (stepData.step === 'Wait for Quality Control') {
+                console.log(`wait for Quality Control Date: ${stepData.waitDate}`);
+            }
+
             // Quality Control Step
             if (stepData.step === 'Quality Control') {
-                console.log(`--- Step: Quality Control ---`);
                 console.log(`Quality Control Date: ${stepData.testingDateTime}`);
+            }
+
+            //waiting step-> check for frauds
+            if (stepData.step === 'Wait for Packaging') {
+                console.log(`wait for Packaging Date: ${stepData.waitDate}`);
             }
     
             // Packaging Step
-            if (batchData.Packaging.step === 'Packaging') {
-                console.log(`--- Step: Packaging ---`);
-                console.log(`Packaging Date: ${batchData.Packaging.packagingDateTime}`);
-                console.log(`Container Issues: ${JSON.stringify(batchData.Packaging.containerIssues)}`);
+            if (stepData.step === 'Packaging') {
+                console.log(`Packaging Date: ${stepData.packagingDateTime}`);
+                console.log(`Container Issues: ${JSON.stringify(stepData.containerIssues)}`);
             }
-            break;
+            
+            //waiting step-> check for frauds
+            if (stepData.step === 'Wait for Warehousing') {
+                console.log(`Wait for Warehousing Date: ${stepData.waitDate}`);
+            }
+    
         }
-
 
         const packageData = batchData.packages && batchData.packages[packageID];
         if (!packageData) {
@@ -1730,12 +2112,22 @@ class BatchContract {
                 console.log(`Warehouse entry Date: ${stepData.entryTime}`);
                 console.log(`Warehouse building: ${stepData.warehouse.building}`)
             }
+            
+            //waiting step-> check for frauds
+            if (stepData.step === 'Wait for Testing') {
+                console.log(`Wait for Testing Date: ${stepData.waitDate}`);
+            }
 
             // Testing Step
             if (stepData.step === 'Testing') {
                 console.log(`Testing Date: ${stepData.testingDate}`);
                 console.log(`warehouse: ${stepData.warehouse}`);
                 console.log(`sampleID: ${stepData.sampleID}`);
+            }
+
+            //waiting step-> check for frauds
+            if (stepData.step === 'Wait for Distribution') {
+                console.log(`Wait for Distribution Date: ${stepData.waitDate}`);
             }
 
             // Distribution Step
@@ -1746,12 +2138,23 @@ class BatchContract {
                 console.log(`Destination: ${stepData.destination}`);
             }
 
+            //waiting step-> check for frauds
+            if (stepData.step === 'Wait for Car Service Center') {
+                console.log(`Wait for Car Service Center Date: ${stepData.waitDate}`);
+            }
+
             // Car Service Center Step
             if (stepData.step === 'Car Service Center') {
                 console.log(`Car Service Center Date: ${stepData.date}`);
                 console.log(`ServiceCenterID: ${stepData.ServiceCenterID}`)
             }
+
+            //final check step-> check for frauds
+            if (stepData.step === 'The product was successfully used') {
+                console.log(`The product was successfully used in this Date: ${stepData.waitDate}`);
+            }
         }
+
     
         return shim.success('Check_Status executed successfully.');
     }
@@ -1759,3 +2162,6 @@ class BatchContract {
 }    
 // Start the chaincode
 shim.start(new BatchContract());
+
+
+
