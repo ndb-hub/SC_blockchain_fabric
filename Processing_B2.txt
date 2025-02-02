@@ -1,0 +1,89 @@
+Processing Stage Dataset
+Batch Information
+Batch Number: 2
+Processing Date: 2024-11-14
+Start Time: 08:00 AM
+End Time: 11:47 AM
+Processing Duration: 3 hours 30 minutes
+
+Personnel Involved
+Name: John Doe
+ID: 001
+Role: Quality Supervisor
+Certifications: Certified Quality Inspector (CQI)
+Name: Jane Smith
+ID: 002
+Role: Machine Operator
+Certifications: Machinery Handling Expert (MHE)
+Name: Alan Brown
+ID: 003
+Role: Maintenance Technician
+Certifications: Equipment Maintenance Specialist (EMS)
+
+Materials Used
+Base Oil:
+Quantity: 500 liters
+Source: XYZ Refinery
+Batch Number: BASE20241121
+Certification: ISO9001-XYZ
+Delivery Date: 2024-11-21
+Transport Details: Tanker Truck #TRK1002, Driver ID #DRV789
+Additives:
+Additive Name: Viscosity Modifier
+Quantity: 25 liters
+Supplier: ABC Chemicals
+Batch Number: VM20241120
+Certification: QC-ABC-VM2024
+Additive Name: Anti-Wear Agent
+Quantity: 15 liters
+Supplier: DEF Additives
+Batch Number: AW20241120
+Certification: QC-DEF-AW2024
+Additive Name: Corrosion Inhibitor
+Quantity: 10 liters
+Supplier: GHI Additives
+Batch Number: CI20241120
+Certification: QC-GHI-CI2024
+
+Equipment Used
+Mixer ID: MIX001
+Last Maintenance: 2024-11-15
+Calibration Status: Valid until 2024-12-15
+Heating Tank ID: HTANK002
+Last Maintenance: 2024-11-16
+Calibration Status: Valid until 2024-12-16
+Heating Temperature: 85°C (target achieved at 09:30 AM)
+Cooling Tank ID: CTANK003
+Last Maintenance: 2024-11-16
+Calibration Status: Valid until 2024-12-16
+Cooling Duration: 60 minutes (target temperature: 25°C)
+
+Process Details
+Mixing Start Time: 08:00 AM
+Duration: 90 minutes
+Target Achieved: Homogeneous blend (9:30 AM)
+Heating Start Time: 09:30 AM
+Target Temperature: 84°C
+Duration: 60 minutes
+Cooling Start Time: 10:30 AM
+Target Temperature: 26°C
+Duration: 60 minutes
+Quality Tests Conducted
+Viscosity Check: Passed (viscosity index: 120.7, target: ≥115)
+Inspector: John Doe
+Contamination Check: Passed (contaminant level: <5ppm, target: ≤10ppm)
+Inspector: John Doe
+Certification Issued: CERT123XYZ (valid through 2025)
+
+Logistics and Security
+Material Transportation: GPS-tracked
+Entry Gate Time: 07:46 AM
+Exit Gate Time: 11:46 AM
+CCTV Monitoring: Active
+Key Events Recorded: Material arrival, mixing, and storage transfer
+Tamper-Evident Seals: Verified and logged by Alan Brown
+
+Notes
+No anomalies detected during processing.
+Process completed successfully.
+Batch ready for Quality Control step as of 11:47 AM, 2024-11-14.

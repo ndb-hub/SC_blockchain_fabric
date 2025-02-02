@@ -1,0 +1,54 @@
+Warehousing Report for PackageID 2-4-002
+
+Package Information
+PackageID: 2-4-002
+Batch Number: 2
+Size: 4L
+Number: 002
+Warehousing Date: 2024-11-17
+Start Time: 08:33 AM
+End Time: 8:38 PM
+Duration: 5 minutes
+
+Personnel Involved
+Name: John Smith
+ID: P007
+Role: Warehousing Supervisor
+Certifications: Warehouse Supervisor (WS)
+Name: Sarah Johnson
+ID: P015
+Role: Inspector
+Certifications: Packaging Quality Assurance Officer (PQAO)
+
+Warehouse Information
+Warehouse Location: Building B, Section 1, Rack 2, Shelf 1
+
+Environmental Conditions:
+Temperature: Maintained at 22°C
+Humidity Level: 45%
+
+Entry Details
+Time of Entry: 2024-11-17 , 8:33
+Movement Verified By: John Smith 
+
+Inspection Results
+Inspection Date: 2024-11-17 , 8:35
+Conducted By: Sarah Johnson
+Observations:
+Container integrity: No damage or leakage.
+Label condition: Batch details match the blockchain record.
+
+Inventory Count Update
+Total packages in the warehouse after this entry: 3 packages.
+
+Security and Logging
+Access Controls:
+Warehouse access restricted to John Smith and Sarah Johnson during this operation.
+CCTV Monitoring:
+Warehouse movements recorded. Footage available under file reference WH-CCTV-20241116-0830.
+
+Notes
+Notes
+All containers passed quality and regulatory compliance checks.
+Package 2-4-002 approved for storage and it is ready for the Testing (Post-Warehouse) step.
+

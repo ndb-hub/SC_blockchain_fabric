@@ -1,0 +1,101 @@
+Quality Control Dataset for Batch 2
+Batch Information
+Batch Number: 2
+Quality Control Date: 2024-11-15
+Start Time: 09:00 AM
+End Time: 12:30 PM
+Duration: 3 hours 30 minutes
+
+Personnel Involved
+Name: John Doe
+ID: 001
+Role: Quality Supervisor
+Certifications: Certified Quality Inspector (CQI)
+Name: Emily Davis
+ID: 004
+Role: Lab Technician
+Certifications: Certified Lubricant Analyst (CLA)
+Name: Michael Lee
+ID: 005
+Role: Data Analyst
+Certifications: Quality Data Specialist (QDS)
+
+Tests Conducted and Results
+Viscosity Test
+Objective: Ensure proper flow resistance at varying temperatures.
+Test Result: Passed
+40°C Viscosity: 67.6 cSt
+100°C Viscosity: 9.9 cSt
+Target: Within range (65–70 cSt at 40°C; 9.5–10.5 cSt at 100°C)
+Inspector: John Doe
+
+Metal Wear Analysis
+Objective: Detect metal particles indicating engine wear.
+Test Result: Passed
+Metal Particles: 4.1 ppm
+Target: ≤5 ppm
+Inspector: Emily Davis
+
+Total Base Number (TBN) Test
+Objective: Measure ability to neutralize acidic contaminants.
+Test Result: Passed
+TBN Value: 10.0 mg KOH/g
+Target: ≥10 mg KOH/g
+Inspector: Emily Davis
+
+Total Acid Number (TAN) Test
+Objective: Assess oil acidity to prevent engine corrosion.
+Test Result: Passed
+TAN Value: 1.3 mg KOH/g
+Target: ≤2 mg KOH/g
+Inspector: Emily Davis
+
+Flash Point Test
+Objective: Determine the temperature at which oil vapor ignites.
+Test Result: Passed
+Flash Point: 228°C
+Target: ≥225°C
+Inspector: John Doe
+
+Insoluble Matter Test
+Objective: Measure solid particles or sludge.
+Test Result: Passed
+Insoluble Matter: 0.4%
+Target: ≤0.5%
+Inspector: Emily Davis
+
+Oxidation Test
+Objective: Evaluate resistance to oxidative degradation.
+Test Result: Passed
+Oxidation Level: 9%
+Target: ≤10%
+Inspector: Emily Davis
+
+Tests Summary
+Viscosity: Passed (40°C: 67.6 cSt, 100°C: 9.9 cSt)
+Metal Wear: Passed (4.1 ppm)
+TBN: Passed (10.0 mg KOH/g)
+TAN: Passed (1.3 mg KOH/g)
+Flash Point: Passed (228°C)
+Insoluble Matter: Passed (0.4%)
+Oxidation: Passed (9%)
+
+Equipment Used
+Viscometer: VISCO001 (Calibrated: 2024-11-10, Valid Until: 2026-01-10)
+Spectrometer: SPEC002 (Calibrated: 2024-11-12, Valid Until: 2026-01-12)
+Flash Point Tester: FPTEST003 (Calibrated: 2024-11-14, Valid Until: 2026-01-14)
+Oxidation Analyzer: OXAN004 (Calibrated: 2024-11-15, Valid Until: 2026-01-15)
+
+Security and Logging
+Sample Chain of Custody:
+Sample Collection: 08:45 AM, 2024-11-15 (by Alan Brown)
+Sample Delivered to Lab: 09:00 AM, 2024-11-15 (GPS-tracked delivery)
+CCTV Monitoring: Active during sample transport and testing.
+Data Logging: Results recorded on blockchain (Hash: xyz123hash1QC).
+Tamper-Seal Verification: Verified intact before testing.
+
+Notes
+Tests confirmed compliance with industry standards.
+No anomalies detected in testing procedures or results.
+Certification Issued: CERTQC20241114
+Batch approved for packaging and labeling as of 12:30 PM, 2024-11-15.

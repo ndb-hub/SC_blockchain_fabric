@@ -1,0 +1,68 @@
+Distribution Phase Dataset for PackageID 2-4-002
+
+Package Information
+Sample PackageID: 2-4-001
+PackageID: 2-4-002
+Batch Number: 2
+Size: 4L
+Number: 002
+Distribution Date: 2024-11-21
+Start Time: 10:00 AM
+Estimated Arrival Time: 2:00 PM
+
+Personnel Involved
+Alan Green (ID: 045)
+Role: Distribution Coordinator
+Certifications: Certified Logistics Specialist (CLS)
+Jessica Lee (ID: 032)
+Role: Transport Supervisor
+Certifications: Transport Operations Specialist (TOS)
+Michael Harris (ID: 021)
+Role: Fleet Driver
+Certifications: Certified Heavy Vehicle Operator (CHVO)
+
+Fleet Information
+Vehicle ID: Truck-09
+Driver's ID: 021
+Vehicle Type: Temperature-Controlled Transport Truck
+
+Route and Stopover Details
+Departure:
+Package 2-4-002 left Warehouse B at 10:00 AM on November 21, 2024.
+Tamper-Seal Verification: Verified intact before loading.
+Stopovers:
+Stop 1: Truck Depot 1 (12:00 PM)
+Purpose: Standard security check and fuel refill.
+Stop 2: Logistic Hub B (1:00 PM)
+Purpose: Temperature regulation check and driver rest.
+Arrival and Unloading:
+The package arrived at CS7 Car Service Center at 2:10 PM.
+The truck was unloaded by Alan Green and Jessica Lee.
+Package delivery and unloading were completed by 2:25 PM.
+
+Transit Conditions
+Temperature: Maintained within the optimal range (15°C–25°C) to ensure oil quality.
+Security Measures:
+GPS tracking was active throughout the journey.
+Security seals were verified intact at each stop and upon final delivery.
+CCTV monitoring covered all transport checkpoints.
+
+Report
+The distribution process for Package 2-4-002 was carried out successfully, starting at 10:00 AM from Warehouse B.
+The journey included two scheduled stopovers:
+Truck Depot 1 for security checks and refueling.
+Logistic Hub B for a temperature check and driver rest.
+At 2:10 PM, the package arrived at CS7 Car Service Center.
+The truck was promptly unloaded, and the package was inspected for further processing.
+Tamper-Seal Verification: Verified intact after delivery.
+
+Security and Logging
+Chain of Custody: Package collected by Alan Green from Warehouse B at 9:45 AM.
+Delivery Verification: GPS tracking and security seals verified at each stage.
+CCTV Monitoring: Active during the entire transport, with footage retained for 30 days.
+Data Logging: All transit data, including temperature and stopovers, recorded on the blockchain.
+
+Notes
+All transport conditions met the required standards.
+No delays or issues were encountered during the journey.
+The final delivery at CS7 Car Service Center was completed on time and within acceptable parameters.

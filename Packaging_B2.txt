@@ -1,0 +1,78 @@
+Packaging Dataset for Batch 2
+Batch Information
+Batch Number: 2
+Packaging Date: 2024-11-16
+Start Time: 08:30 AM
+End Time: 01:45 PM
+Duration: 5 hours 15 minutes
+
+Personnel Involved
+Name: Sarah Carter
+ID: P001
+Role: Packaging Supervisor
+Certifications: Certified Packaging Specialist (CPS)
+Name: David Lopez
+ID: P002
+Role: Machine Operator
+Certifications: Advanced Packaging Technician (APT)
+Name: Amanda Kim
+ID: P003
+Role: Inspector
+Certifications: Packaging Quality Assurance Specialist (PQAS)
+
+Key Packaging Activities and Results
+Filling
+Objective: Transfer motor oil into 1L, 4L, and 20L containers.
+Result: Passed
+Details:
+Total Containers Filled: 2,000 liters and 775 units (500 x 1L, 250 x 4L, 25 x 20L)
+Accuracy: 99.35% precision in volume distribution.
+Inspector: Sarah Carter
+
+Sealing
+Objective: Secure containers to prevent tampering, leakage, or contamination.
+Result: Passed
+Details:
+Seal Method: Induction sealing with tamper-evident packaging.
+Defective Seals Identified and Rejected: 2 units (Corrected and resealed).
+Inspector: David Lopez
+
+Labeling
+Objective: Apply accurate and compliant labels to containers.
+Result: Passed
+Details:
+Labels Printed: 775 units (batch numbers, product specifications, regulatory compliance markings).
+Labeling Accuracy: 100% verified via machine vision systems.
+Inspector: Amanda Kim
+
+Final Inspection
+Objective: Ensure quality and compliance of filled, sealed, and labeled containers.
+Result: Passed
+Details:
+Defects Identified:
+{"containerID": "2-1-020", "issue": "Underfilling"}
+{"containerID": "2-1-075", "issue": "Underfilling"}
+{"containerID": "2-4-043", "issue": "Sealing failure"}
+{"containerID": "2-20-008", "issue": "Underfilling"}
+Inspection Technology: Machine vision system (Label and seal integrity) and manual sampling (5% of containers).
+Inspector: Amanda Kim
+
+Equipment Used
+Filling Machine: FILL-PRO5000 (Calibrated: 2024-11-10, Valid Until: 2026-01-10)
+Sealing Machine: SEAL-X200 (Calibrated: 2024-11-12, Valid Until: 2026-01-12)
+Labeling Machine: LABEL-IT900 (Calibrated: 2024-11-11, Valid Until: 2026-01-11)
+Inspection System: VISINSPEC300 (Calibrated: 2024-11-13, Valid Until: 2026-01-13)
+
+Security and Logging
+CCTV Monitoring: Active throughout the packaging process.
+Tamper-Seal Verification: All containers confirmed secure during inspection.
+Data Logging: Packaging records uploaded to blockchain. (Hash: abc123hash1PKG)
+Sample Chain of Custody:
+Sample Containers: Collected at 01:15 PM, 2024-11-16
+Transferred to Warehouse: 01:45 PM, 2024-11-16 (GPS-tracked).
+
+Notes
+All containers passed quality and regulatory compliance checks except: 2-1-020, 2-1-075, 2-4-043, 2-20-008.
+Batch 1 approved for storage and subsequent distribution.
+Certification Issued: CERTPKG20241115
+
